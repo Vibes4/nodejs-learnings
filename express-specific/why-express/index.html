@@ -1,0 +1,66 @@
+<h1>Why Express over Node? <span class="tag express">Wrap-up</span></h1>
+<p>Express does <strong>not</strong> replace Node — it's a thin layer on top of the <code>http</code> module. Everything Express does, you <em>could</em> do with raw Node. The value is that Express turns dozens of lines of boilerplate into clean, composable primitives.</p>
+
+<h2>Same endpoint, raw Node vs Express</h2>
+<h3>Raw Node <code>http</code></h3>
+<div class="code-wrap"><pre><code>const http = require('http');
+http.createServer((req, res) => {
+  if (req.method === 'GET' && req.url === '/users') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(users));
+  } else if (req.method === 'POST' && req.url === '/users') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      const data = JSON.parse(body);   // manual parse + try/catch
+      // ...
+    });
+  } else {
+    res.writeHead(404); res.end('Not found');   // manual 404
+  }
+}).listen(3000);</code></pre></div>
+<h3>Express</h3>
+<div class="code-wrap"><pre><code>const app = require('express')();
+app.use(express.json());                       // body parsing
+app.get('/users', (req, res) => res.json(users));
+app.post('/users', (req, res) => res.status(201).json(req.body));
+app.listen(3000);                              // 404 handled for you</code></pre></div>
+
+<h2>What Express adds on top of Node</h2>
+<ul>
+  <li><strong>Routing</strong> — declarative <code>app.get/post/...</code> with params, patterns, and ordering, instead of manual <code>if (req.url === ...)</code>.</li>
+  <li><strong>Middleware pipeline</strong> — composable <code>(req,res,next)</code> chain for auth, logging, validation, CORS, rate limiting. This is the big one.</li>
+  <li><strong>Request helpers</strong> — <code>req.params</code>, <code>req.query</code>, <code>req.body</code>, <code>req.cookies</code> (raw Node gives you none of these parsed).</li>
+  <li><strong>Response helpers</strong> — <code>res.json</code>, <code>res.status</code>, <code>res.redirect</code>, <code>res.sendFile</code>, <code>res.render</code> vs hand-setting headers + <code>res.end</code>.</li>
+  <li><strong>Body parsing</strong> — <code>express.json()</code>/<code>urlencoded()</code> vs manually collecting stream chunks.</li>
+  <li><strong>Static file serving</strong> — <code>express.static</code> (with caching, ETags, traversal protection) in one line.</li>
+  <li><strong>Routers</strong> — <code>express.Router()</code> to modularize large apps.</li>
+  <li><strong>Centralized error handling</strong> — the 4-arg error middleware.</li>
+  <li><strong>Template engines</strong> — first-class <code>res.render</code> integration.</li>
+  <li><strong>Huge ecosystem</strong> — thousands of compatible middlewares (helmet, cors, morgan, multer, passport).</li>
+</ul>
+
+<h2>What Express does NOT change</h2>
+<ul>
+  <li>It still runs on Node's single-threaded event loop — the same scaling rules apply.</li>
+  <li>It doesn't add an ORM, validation, or structure — it's unopinionated (that's why NestJS/Fastify exist).</li>
+  <li>Under the hood it's still <code>http.createServer</code>; <code>app</code> is just the request listener.</li>
+</ul>
+
+<div class="callout tip"><strong>One-liner for the interview:</strong> "Express is a minimal, unopinionated routing-and-middleware framework over Node's <code>http</code> module. It doesn't add new capabilities to Node — it removes boilerplate: declarative routing, a composable middleware pipeline, and request/response helpers that would otherwise be dozens of lines of manual stream and header handling."</div>
+
+<h2>Express vs alternatives</h2>
+<ul>
+  <li><strong>Fastify</strong> — faster, schema-based validation/serialization, plugin system. Modern default for performance.</li>
+  <li><strong>Koa</strong> — by the Express team; async/await-first, tiny core, no built-in middleware.</li>
+  <li><strong>NestJS</strong> — opinionated, TypeScript, DI, modules (Angular-like); runs on Express or Fastify.</li>
+  <li><strong>Hapi</strong> — config-centric, batteries-included.</li>
+</ul>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Does Express make Node faster?</summary><p>No — there's slight overhead. Its value is developer productivity and structure, not raw speed. Fastify is faster if that's the priority.</p></details>
+  <details><summary>What is <code>app</code> really?</summary><p>A function: the request listener you'd pass to <code>http.createServer(app)</code>. <code>app.listen()</code> does exactly that internally.</p></details>
+  <details><summary>If Express is just a layer, why not use raw http?</summary><p>You'd reinvent routing, body parsing, middleware, error handling, and static serving — error-prone and unmaintainable at scale. Express standardizes all of it.</p></details>
+  <details><summary>When would you NOT pick Express?</summary><p>When you need max throughput + built-in schema validation (Fastify), an opinionated enterprise structure with DI (NestJS), or a tiny async-first core (Koa).</p></details>
+</div>

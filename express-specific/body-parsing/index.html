@@ -1,0 +1,27 @@
+<h1>Body parsing <span class="tag express">Express</span></h1>
+<p>HTTP request bodies arrive as a raw stream. Body-parsing middleware reads that stream and populates <code>req.body</code>. Since Express 4.16, the common parsers are built in.</p>
+
+<h2>Built-in parsers</h2>
+<ul>
+  <li><code>express.json()</code> — parses <code>application/json</code> → <code>req.body</code> object.</li>
+  <li><code>express.urlencoded({ extended: true })</code> — parses HTML form posts (<code>application/x-www-form-urlencoded</code>).</li>
+  <li><code>express.raw()</code> / <code>express.text()</code> — raw Buffer / plain text.</li>
+</ul>
+
+<h2>extended: true vs false</h2>
+<ul>
+  <li><code>false</code> — uses <code>querystring</code>; only string/array values.</li>
+  <li><code>true</code> — uses <code>qs</code>; supports nested objects (<code>user[name]=x</code>).</li>
+</ul>
+
+<h2>multipart / file uploads</h2>
+<p>The built-ins do <strong>not</strong> handle <code>multipart/form-data</code> (file uploads). Use <strong>multer</strong> (or busboy). Multer writes files to disk or memory and adds <code>req.file</code>/<code>req.files</code>.</p>
+
+<div class="callout warn"><strong>DoS protection:</strong> Always set a body size <code>limit</code> (e.g. <code>express.json({ limit: '1mb' })</code>). Without it, a huge payload can exhaust memory.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why is <code>req.body</code> undefined?</summary><p>No body parser registered, or it's registered after the route, or the client didn't send the matching Content-Type.</p></details>
+  <details><summary>How do you handle file uploads?</summary><p>Use <code>multer</code> for <code>multipart/form-data</code>; the JSON/urlencoded parsers don't handle files.</p></details>
+  <details><summary>extended true vs false?</summary><p><code>true</code> (qs lib) allows rich nested objects/arrays; <code>false</code> (querystring) is flat. Use true for complex forms.</p></details>
+</div>

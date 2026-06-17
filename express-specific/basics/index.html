@@ -1,0 +1,26 @@
+<h1>Express basics <span class="tag express">Express</span></h1>
+<p>Express is a minimal, unopinionated web framework built on Node's <code>http</code> module. It gives you routing, middleware, and response helpers so you stop writing boilerplate.</p>
+
+<h2>The four-line server</h2>
+<div class="code-wrap"><pre><code>const express = require('express');
+const app = express();
+app.get('/', (req, res) => res.send('Hello'));
+app.listen(3000);</code></pre></div>
+<p>Compare that to the raw <code>http</code> module page — Express collapses manual routing, status handling, and response writing into expressive helpers.</p>
+
+<h2>The <code>app</code> object</h2>
+<ul>
+  <li><code>app.METHOD(path, handler)</code> — register routes (<code>get</code>, <code>post</code>, <code>put</code>, <code>delete</code>, <code>patch</code>, <code>all</code>).</li>
+  <li><code>app.use([path,] middleware)</code> — mount middleware.</li>
+  <li><code>app.set(key, value)</code> / <code>app.get(key)</code> — app settings (e.g. <code>view engine</code>, <code>trust proxy</code>).</li>
+  <li><code>app.listen(port, cb)</code> — start the server (returns the underlying <code>http.Server</code>).</li>
+</ul>
+
+<div class="callout tip"><strong>Install:</strong> <code>npm install express</code>. Express 5 is now current (async error handling improved); the concepts here apply to both 4 and 5.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What is Express, exactly?</summary><p>A thin routing + middleware layer over Node's <code>http</code> module. It doesn't replace Node; it organizes it.</p></details>
+  <details><summary>Is Express opinionated?</summary><p>No — it's minimal and unopinionated (you choose your DB, structure, auth). Frameworks like NestJS add opinions on top.</p></details>
+  <details><summary>What does <code>app.listen</code> return?</summary><p>The underlying Node <code>http.Server</code> instance — useful for sockets, graceful shutdown, and testing.</p></details>
+</div>

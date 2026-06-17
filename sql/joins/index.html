@@ -1,0 +1,36 @@
+<h1>Joins <span class="tag db">SQL</span></h1>
+<p>Joins combine rows from multiple tables on a related column — the core of the relational model. Knowing each join's exact result set is a guaranteed interview question.</p>
+
+<h2>Join types</h2>
+<ul>
+  <li><strong>INNER JOIN</strong> — only rows with a match in both tables.</li>
+  <li><strong>LEFT (OUTER) JOIN</strong> — all left rows; right columns are NULL when no match.</li>
+  <li><strong>RIGHT JOIN</strong> — mirror of LEFT (all right rows).</li>
+  <li><strong>FULL OUTER JOIN</strong> — all rows from both; NULLs where no match.</li>
+  <li><strong>CROSS JOIN</strong> — Cartesian product (every combination).</li>
+  <li><strong>SELF JOIN</strong> — a table joined to itself (e.g. employee → manager).</li>
+</ul>
+
+<h2>Example</h2>
+<div class="code-wrap"><pre><code>SELECT u.name, o.total
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+WHERE o.total > 50 OR o.total IS NULL;</code></pre></div>
+
+<h2>Senior gotchas</h2>
+<ul>
+  <li><strong>LEFT JOIN + WHERE on the right table</strong> silently turns it into an INNER JOIN (NULLs fail the predicate). Put right-table conditions in the <code>ON</code> clause instead.</li>
+  <li>Always join on <strong>indexed</strong> columns (usually FK → PK) or it's a slow scan.</li>
+  <li><strong>Fan-out:</strong> joining one-to-many duplicates the "one" side's rows; use <code>DISTINCT</code> or aggregate carefully.</li>
+  <li>Join order/strategy (nested loop, hash, merge) is chosen by the planner — check <code>EXPLAIN</code>.</li>
+</ul>
+
+<div class="callout warn"><strong>N+1 vs JOIN:</strong> fetching a list then querying related rows per item (common with naive ORMs) is the N+1 problem. One JOIN (or <code>WHERE id IN (...)</code>) replaces N queries.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>INNER vs LEFT JOIN?</summary><p>INNER returns only matching rows; LEFT returns all left rows with NULLs where the right side has no match.</p></details>
+  <details><summary>Why did my LEFT JOIN behave like an INNER JOIN?</summary><p>A WHERE filter on the right table excludes the NULL rows. Move that condition into the ON clause to preserve unmatched left rows.</p></details>
+  <details><summary>What is a self join?</summary><p>Joining a table to itself with aliases — e.g. employees to their managers in the same table.</p></details>
+  <details><summary>How does the DB execute a join?</summary><p>The planner picks nested-loop, hash, or merge join based on indexes and row estimates; inspect with EXPLAIN ANALYZE.</p></details>
+</div>

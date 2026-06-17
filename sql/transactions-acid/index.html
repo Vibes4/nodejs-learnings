@@ -1,0 +1,42 @@
+<h1>Transactions &amp; ACID <span class="tag db">SQL</span></h1>
+<p>Transactions group statements into an all-or-nothing unit. ACID is the guarantee set relational databases provide — and a near-certain interview question.</p>
+
+<h2>ACID</h2>
+<ul>
+  <li><strong>Atomicity</strong> — all statements succeed or none do (COMMIT / ROLLBACK).</li>
+  <li><strong>Consistency</strong> — the DB moves from one valid state to another (constraints, FKs hold).</li>
+  <li><strong>Isolation</strong> — concurrent transactions don't corrupt each other.</li>
+  <li><strong>Durability</strong> — once committed, it survives crashes (WAL / fsync).</li>
+</ul>
+
+<h2>Isolation levels (weakest → strongest)</h2>
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0">
+  <tr><th align="left">Level</th><th>Dirty read</th><th>Non-repeatable</th><th>Phantom</th></tr>
+  <tr><td>Read Uncommitted</td><td>✅ possible</td><td>✅</td><td>✅</td></tr>
+  <tr><td>Read Committed <em>(PG default)</em></td><td>❌</td><td>✅</td><td>✅</td></tr>
+  <tr><td>Repeatable Read <em>(MySQL default)</em></td><td>❌</td><td>❌</td><td>✅*</td></tr>
+  <tr><td>Serializable</td><td>❌</td><td>❌</td><td>❌</td></tr>
+</table>
+<ul>
+  <li><strong>Dirty read</strong> — read uncommitted data.</li>
+  <li><strong>Non-repeatable read</strong> — same row, different value on re-read.</li>
+  <li><strong>Phantom read</strong> — same query, new rows appear.</li>
+</ul>
+
+<h2>Locking &amp; concurrency</h2>
+<ul>
+  <li><strong>Pessimistic</strong> — <code>SELECT ... FOR UPDATE</code> locks rows up front.</li>
+  <li><strong>Optimistic</strong> — a version column; check-and-retry on conflict.</li>
+  <li><strong>Deadlocks</strong> — two txns wait on each other; the DB kills one. Avoid by locking in a consistent order.</li>
+</ul>
+
+<div class="callout warn"><strong>Always release the connection.</strong> Run the whole transaction on one pooled client and <code>release()</code> it in <code>finally</code>, even on error — leaked connections exhaust the pool.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Explain ACID.</summary><p>Atomicity (all-or-nothing), Consistency (valid states only), Isolation (concurrent safety), Durability (survives crashes).</p></details>
+  <details><summary>Dirty vs non-repeatable vs phantom read?</summary><p>Dirty = reading uncommitted data; non-repeatable = a row's value changes between reads; phantom = new rows match a re-run query.</p></details>
+  <details><summary>Default isolation level?</summary><p>Postgres: Read Committed. MySQL/InnoDB: Repeatable Read. Serializable is strongest but costs concurrency.</p></details>
+  <details><summary>Optimistic vs pessimistic locking?</summary><p>Pessimistic locks rows during the txn (FOR UPDATE); optimistic detects conflicts via a version and retries — better under low contention.</p></details>
+  <details><summary>What causes a deadlock and how do you prevent it?</summary><p>Transactions acquiring locks in opposite orders. Prevent by always locking resources in a consistent order and keeping transactions short.</p></details>
+</div>

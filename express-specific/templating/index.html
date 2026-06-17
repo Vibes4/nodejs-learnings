@@ -1,0 +1,28 @@
+<h1>Template engines (SSR) <span class="tag express">Express</span></h1>
+<p>Template engines render dynamic HTML on the server. Express supports many — <strong>EJS</strong>, <strong>Pug</strong>, <strong>Handlebars</strong> — via <code>res.render()</code>.</p>
+
+<h2>Setup</h2>
+<div class="code-wrap"><pre><code>app.set('view engine', 'ejs');     // engine
+app.set('views', path.join(__dirname, 'views'));  // template folder
+
+app.get('/', (req, res) => {
+  res.render('home', { title: 'Hi', users: [...] });  // renders views/home.ejs
+});</code></pre></div>
+
+<h2>When SSR matters</h2>
+<ul>
+  <li>SEO-critical pages (server sends fully rendered HTML).</li>
+  <li>Simple admin panels, emails, server-rendered marketing pages.</li>
+  <li>Faster first paint than a client-rendered SPA.</li>
+</ul>
+
+<div class="callout"><strong>Modern reality:</strong> Most apps today are API + React/Vue SPA, or use a meta-framework (Next.js, Remix) for SSR. Classic Express templating is still common for admin tools, server-rendered emails, and small apps.</div>
+
+<div class="callout warn"><strong>XSS:</strong> Use escaped output (<code>&lt;%= %&gt;</code> in EJS) for user data. Unescaped (<code>&lt;%- %&gt;</code>) injects raw HTML — only for trusted content.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>SSR vs CSR vs SPA?</summary><p>SSR renders HTML on the server (better SEO/first paint). CSR/SPA renders in the browser via JS (richer interactivity). Many apps mix both.</p></details>
+  <details><summary>How do template engines prevent XSS?</summary><p>By auto-escaping interpolated values. You must opt into raw HTML explicitly, and only for trusted data.</p></details>
+  <details><summary>Where does Express look for views?</summary><p>The directory set via <code>app.set('views', ...)</code> (default <code>./views</code>), with the configured view engine extension.</p></details>
+</div>

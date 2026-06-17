@@ -1,0 +1,16 @@
+{
+  "name": "nodejs-learnings",
+  "version": "1.0.0",
+  "description": "Interactive Node.js + Express learning app for senior Node/Express/MongoDB/SQL interviews",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js"
+  },
+  "keywords": ["nodejs", "express", "mongodb", "sql", "interview", "learning"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

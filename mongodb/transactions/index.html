@@ -1,0 +1,35 @@
+<h1>Transactions &amp; Consistency <span class="tag db">MongoDB</span></h1>
+<p>A single-document write in MongoDB is <strong>always atomic</strong>. For multi-document atomicity you need explicit <strong>multi-document transactions</strong> (since 4.0 on replica sets, 4.2 on sharded clusters).</p>
+
+<h2>Using transactions (Mongoose)</h2>
+<div class="code-wrap"><pre><code>const session = await mongoose.startSession();
+try {
+  session.startTransaction();
+  await Account.updateOne({ _id: a }, { $inc: { balance: -100 } }, { session });
+  await Account.updateOne({ _id: b }, { $inc: { balance:  100 } }, { session });
+  await session.commitTransaction();   // all-or-nothing
+} catch (e) {
+  await session.abortTransaction();    // rollback
+} finally {
+  session.endSession();
+}</code></pre></div>
+
+<h2>Design first — transactions second</h2>
+<p>MongoDB's philosophy: model so related data lives in one document and you rarely need transactions. Reach for them on genuine cross-document invariants (money transfers, inventory + order).</p>
+
+<h2>Consistency knobs</h2>
+<ul>
+  <li><strong>Write concern</strong> (<code>w</code>) — how many nodes must ack a write (<code>w:'majority'</code> for durability).</li>
+  <li><strong>Read concern</strong> — <code>local</code>, <code>majority</code>, <code>linearizable</code> — controls how fresh/consistent reads are.</li>
+  <li><strong>Read preference</strong> — primary vs secondary (stale reads on secondaries).</li>
+</ul>
+
+<div class="callout warn"><strong>Cost:</strong> Multi-doc transactions add latency and locking, can abort under contention (retry with backoff), and have time/size limits. Don't use them as a substitute for good schema design.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Are MongoDB writes atomic?</summary><p>Yes at the single-document level (including embedded sub-docs). Across documents you need a multi-document transaction.</p></details>
+  <details><summary>What infra do transactions require?</summary><p>A replica set (or sharded cluster on 4.2+). They don't work on a standalone mongod.</p></details>
+  <details><summary>What is write concern majority?</summary><p>The write is acknowledged only after a majority of replica-set members persist it — guarantees durability against failover.</p></details>
+  <details><summary>How does Mongo's model reduce the need for transactions?</summary><p>By embedding related data in one document, atomic single-doc updates cover most consistency needs — transactions become the exception.</p></details>
+</div>

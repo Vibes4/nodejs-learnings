@@ -1,0 +1,33 @@
+<h1>Crypto <span class="tag">Node Core</span></h1>
+<p>The <code>crypto</code> module provides hashing, HMAC, symmetric/asymmetric encryption, and secure random values. Critical for any auth-related interview.</p>
+
+<h2>Hashing (one-way)</h2>
+<ul>
+  <li><code>crypto.createHash('sha256').update(data).digest('hex')</code> — fast, deterministic, irreversible.</li>
+  <li>Used for checksums and integrity — <strong>NOT</strong> for passwords directly.</li>
+</ul>
+
+<h2>Passwords: never plain SHA</h2>
+<p>SHA is too fast → brute-forceable. Use a slow, salted KDF:</p>
+<ul>
+  <li><code>crypto.scrypt</code> / <code>crypto.pbkdf2</code> (built-in), or <strong>bcrypt</strong> / <strong>argon2</strong> (libraries).</li>
+  <li>Each password gets a unique random <strong>salt</strong> to defeat rainbow tables.</li>
+</ul>
+
+<h2>Other essentials</h2>
+<ul>
+  <li><code>crypto.randomBytes(n)</code> / <code>crypto.randomUUID()</code> — secure tokens/IDs.</li>
+  <li><code>crypto.createHmac(algo, key)</code> — keyed hash for signing (e.g. webhooks, JWT HS256).</li>
+  <li><code>crypto.timingSafeEqual(a, b)</code> — constant-time compare to prevent timing attacks.</li>
+  <li>AES via <code>createCipheriv</code>/<code>createDecipheriv</code> for symmetric encryption.</li>
+</ul>
+
+<div class="callout warn"><strong>Never</strong> use <code>Math.random()</code> for tokens, session IDs, or salts — it's not cryptographically secure. Use <code>crypto.randomBytes</code>/<code>randomUUID</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why not hash passwords with SHA-256?</summary><p>SHA is designed to be fast → billions of guesses/sec. Passwords need a deliberately slow, salted algorithm (bcrypt/scrypt/argon2) with a per-user salt.</p></details>
+  <details><summary>Hashing vs encryption?</summary><p>Hashing is one-way (can't reverse) — for integrity/passwords. Encryption is two-way (decrypt with a key) — for confidential data you need back.</p></details>
+  <details><summary>Why timingSafeEqual?</summary><p><code>===</code> short-circuits, leaking length/position info via timing. Constant-time comparison prevents an attacker from inferring secrets.</p></details>
+  <details><summary>What's a salt and why per-user?</summary><p>Random data mixed into the hash so identical passwords hash differently, defeating precomputed rainbow tables.</p></details>
+</div>

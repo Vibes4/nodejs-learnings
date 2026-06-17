@@ -1,0 +1,40 @@
+<h1>Data Modeling: Embed vs Reference <span class="tag db">MongoDB</span></h1>
+<p>The single most important MongoDB design decision. Unlike SQL (where you normalize and join), MongoDB rewards modeling data the way your application <em>reads</em> it.</p>
+
+<h2>Embedding (denormalized)</h2>
+<div class="code-wrap"><pre><code>// One document holds everything read together
+{ _id, name: "Ada", addresses: [{ city, zip }], cart: [{ sku, qty }] }</code></pre></div>
+<ul>
+  <li>✅ One read returns the whole object — no joins.</li>
+  <li>✅ Atomic updates (single-document writes are always atomic).</li>
+  <li>❌ Documents can grow unbounded (16MB BSON limit).</li>
+  <li>❌ Duplicated data is hard to keep in sync.</li>
+</ul>
+
+<h2>Referencing (normalized)</h2>
+<div class="code-wrap"><pre><code>// Orders point to a user by id; join with populate/$lookup
+{ _id, userId: ObjectId("..."), total: 99 }</code></pre></div>
+<ul>
+  <li>✅ No duplication; shared/large data stays separate.</li>
+  <li>✅ Unbounded relationships (one-to-many/many-to-many).</li>
+  <li>❌ Needs a second query / <code>$lookup</code> / <code>populate</code>.</li>
+</ul>
+
+<h2>The decision rule</h2>
+<ul>
+  <li><strong>One-to-few, read together, bounded, owned</strong> → embed (addresses, line items).</li>
+  <li><strong>One-to-many / many-to-many, large, shared, queried independently</strong> → reference (users↔orders, products↔categories).</li>
+  <li><strong>Hybrid</strong> → embed a <em>subset</em> for fast reads + reference for the full record (the "extended reference" pattern).</li>
+</ul>
+
+<div class="callout tip"><strong>Schema design patterns:</strong> Extended Reference, Subset, Computed, Bucket (time-series), Outlier, Schema Versioning. Naming a couple signals senior-level MongoDB knowledge.</div>
+
+<div class="callout warn"><strong>Anti-pattern:</strong> Massive unbounded arrays (e.g. all comments embedded in a post). They blow the 16MB limit and make updates slow. Use the bucket/subset pattern or reference.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How do you decide embed vs reference?</summary><p>By access pattern + cardinality + lifecycle: embed bounded data read together and owned by the parent; reference large, shared, unbounded, or independently-queried data.</p></details>
+  <details><summary>What's the document size limit and why does it matter?</summary><p>16MB per BSON document. Unbounded embedded arrays can hit it; model with referencing or the bucket pattern.</p></details>
+  <details><summary>What is the extended reference pattern?</summary><p>Store a small frequently-needed subset of the referenced doc inline (e.g. user's name on an order) to avoid joins, while keeping the full record by reference.</p></details>
+  <details><summary>How do you avoid the N+1 with references?</summary><p>Batch with <code>$in</code> or aggregation <code>$lookup</code> instead of populating in a loop.</p></details>
+</div>

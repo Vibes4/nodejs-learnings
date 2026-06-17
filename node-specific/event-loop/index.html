@@ -1,0 +1,36 @@
+<h1>The Event Loop &amp; Timers <span class="tag">Node Core</span></h1>
+<p>The single most important senior topic. Node is single-threaded for <em>your JS</em>, but uses libuv + a thread pool for I/O. The event loop is what lets one thread handle thousands of concurrent connections.</p>
+
+<h2>Event loop phases (in order)</h2>
+<ol>
+  <li><strong>timers</strong> — <code>setTimeout</code>, <code>setInterval</code> callbacks.</li>
+  <li><strong>pending callbacks</strong> — deferred I/O callbacks.</li>
+  <li><strong>poll</strong> — retrieve new I/O events; execute I/O callbacks (most work happens here).</li>
+  <li><strong>check</strong> — <code>setImmediate</code> callbacks.</li>
+  <li><strong>close callbacks</strong> — e.g. <code>socket.on('close')</code>.</li>
+</ol>
+
+<h2>Microtasks run BETWEEN phases</h2>
+<p>After every macrotask (and between phases), Node drains the microtask queues in this priority:</p>
+<ol>
+  <li><code>process.nextTick()</code> queue (highest priority — runs before promises).</li>
+  <li>Promise microtask queue (<code>.then</code>, <code>await</code>, <code>queueMicrotask</code>).</li>
+</ol>
+
+<div class="callout warn"><strong>Starvation:</strong> Recursive <code>process.nextTick</code> can starve the event loop entirely — the loop never advances to the next phase. Prefer <code>setImmediate</code> for "run after I/O".</div>
+
+<h2>setTimeout(0) vs setImmediate</h2>
+<ul>
+  <li>Inside an I/O callback, <code>setImmediate</code> always fires <em>before</em> <code>setTimeout(0)</code> (check phase comes right after poll).</li>
+  <li>At the top level, the order is non-deterministic (depends on process startup timing).</li>
+</ul>
+
+<div class="callout tip"><strong>Senior tip:</strong> CPU-bound work blocks the event loop and kills throughput. Offload to <code>worker_threads</code>, the C++ thread pool, or another service. "Don't block the loop" is the golden rule.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Is Node single-threaded?</summary><p>Your JavaScript runs on one thread, but libuv maintains a thread pool (default 4) for fs, DNS, crypto, zlib. So Node is "single-threaded event loop + background thread pool".</p></details>
+  <details><summary>nextTick vs Promise vs setImmediate ordering?</summary><p><code>nextTick</code> → Promises (both microtasks, drained before continuing) → <code>setImmediate</code> (check phase). Timers vs immediate depends on context.</p></details>
+  <details><summary>What blocks the event loop?</summary><p>Synchronous CPU work (big loops, JSON.parse of huge payloads, sync crypto, <code>fs.*Sync</code>), and recursive <code>nextTick</code>.</p></details>
+  <details><summary>How do you size the libuv thread pool?</summary><p><code>UV_THREADPOOL_SIZE</code> env var (max 1024). Raise it if fs/crypto-heavy.</p></details>
+</div>

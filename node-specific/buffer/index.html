@@ -1,0 +1,24 @@
+<h1>Buffer <span class="tag">Node Core</span></h1>
+<p>A <code>Buffer</code> is a fixed-length chunk of raw binary memory <em>outside</em> the V8 heap. It's how Node handles bytes: file contents, network packets, crypto, images. Strings are for text; Buffers are for bytes.</p>
+
+<h2>Creating buffers</h2>
+<ul>
+  <li><code>Buffer.from(str, encoding)</code> — from a string/array.</li>
+  <li><code>Buffer.alloc(n)</code> — n zero-filled bytes (safe).</li>
+  <li><code>Buffer.allocUnsafe(n)</code> — faster, but may contain old memory — <strong>fill it before use</strong>.</li>
+</ul>
+
+<h2>Encodings</h2>
+<p><code>'utf8'</code> (default), <code>'ascii'</code>, <code>'base64'</code>, <code>'hex'</code>, <code>'latin1'</code>. Convert with <code>buf.toString(encoding)</code>.</p>
+
+<div class="callout warn"><strong>Why allocUnsafe is "unsafe":</strong> it reuses memory that may hold sensitive leftover data (passwords, keys). Never send an unfilled <code>allocUnsafe</code> buffer to a client.</div>
+
+<h2>Buffers vs strings vs Uint8Array</h2>
+<p><code>Buffer</code> is a subclass of <code>Uint8Array</code>, so it works with TypedArray APIs. Multi-byte UTF-8 characters can be split across buffer boundaries when streaming — use <code>string_decoder</code> to handle that.</p>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Where is Buffer memory allocated?</summary><p>Outside the V8 heap (raw memory managed by Node), which is why it isn't subject to V8 heap size limits and is efficient for large binary data.</p></details>
+  <details><summary>alloc vs allocUnsafe?</summary><p><code>alloc</code> zero-fills (safe, slightly slower). <code>allocUnsafe</code> skips zeroing (faster) but may expose old memory — must fill before exposing.</p></details>
+  <details><summary>How can string concatenation of stream chunks corrupt data?</summary><p>A multi-byte UTF-8 char split across two chunks decodes wrong. Concatenate Buffers first, or use <code>StringDecoder</code>.</p></details>
+</div>

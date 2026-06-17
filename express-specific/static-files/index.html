@@ -1,0 +1,25 @@
+<h1>Static files <span class="tag express">Express</span></h1>
+<p><code>express.static</code> serves files (HTML, CSS, JS, images) directly from a folder — no route needed per file. This is built-in middleware.</p>
+
+<h2>Usage</h2>
+<div class="code-wrap"><pre><code>app.use(express.static('public'));            // serve ./public at /
+app.use('/assets', express.static('public')); // mount at /assets
+app.use(express.static(path.join(__dirname, 'public'))); // absolute = safest</code></pre></div>
+<p>A request to <code>/logo.png</code> serves <code>public/logo.png</code>. <code>index.html</code> is served automatically for <code>/</code>.</p>
+
+<h2>Useful options</h2>
+<ul>
+  <li><code>maxAge</code> — cache-control max-age for browsers/CDNs.</li>
+  <li><code>etag</code>, <code>lastModified</code> — conditional requests (304).</li>
+  <li><code>extensions</code>, <code>index</code>, <code>dotfiles</code>.</li>
+</ul>
+
+<div class="callout tip"><strong>Production:</strong> Let Nginx/CDN serve static assets, not Node — Node's job is dynamic logic. But for SPAs, Express commonly serves the built front-end bundle.</div>
+
+<div class="callout warn"><strong>Always use an absolute path</strong> (<code>path.join(__dirname, 'public')</code>). A relative path is resolved against <code>process.cwd()</code>, which breaks when launched from another directory.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How does Express prevent path traversal in static?</summary><p><code>express.static</code> (via the <code>send</code> module) normalizes and blocks paths that escape the root, so <code>../../etc/passwd</code> is rejected.</p></details>
+  <details><summary>Should Node serve static files in production?</summary><p>Often no — offload to a CDN/reverse proxy for performance. Node serving static is fine for small apps and SPA bundles.</p></details>
+</div>

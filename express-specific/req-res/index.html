@@ -1,0 +1,33 @@
+<h1>Request &amp; Response <span class="tag express">Express</span></h1>
+<p>Express extends Node's raw <code>req</code>/<code>res</code> with convenient properties and helpers.</p>
+
+<h2>The <code>req</code> object</h2>
+<ul>
+  <li><code>req.params</code> — route params (<code>:id</code>).</li>
+  <li><code>req.query</code> — parsed query string.</li>
+  <li><code>req.body</code> — parsed body (needs <code>express.json()</code>/<code>urlencoded()</code>).</li>
+  <li><code>req.headers</code> / <code>req.get('Header')</code> — request headers.</li>
+  <li><code>req.cookies</code> — needs <code>cookie-parser</code>.</li>
+  <li><code>req.ip</code>, <code>req.method</code>, <code>req.path</code>, <code>req.protocol</code>, <code>req.hostname</code>.</li>
+</ul>
+
+<h2>The <code>res</code> object</h2>
+<ul>
+  <li><code>res.send(body)</code> — auto Content-Type (string→html, object→json).</li>
+  <li><code>res.json(obj)</code> — JSON response.</li>
+  <li><code>res.status(code)</code> — set status (chainable).</li>
+  <li><code>res.sendStatus(code)</code> — status + matching text.</li>
+  <li><code>res.redirect(url)</code>, <code>res.render(view, data)</code>, <code>res.download(file)</code>, <code>res.sendFile(path)</code>.</li>
+  <li><code>res.set(header, val)</code> / <code>res.cookie(name, val, opts)</code>.</li>
+</ul>
+
+<div class="callout warn"><strong>One response only:</strong> Calling <code>res.send</code>/<code>res.json</code> twice throws "Cannot set headers after they are sent". Always <code>return</code> after sending.</div>
+
+<div class="callout tip"><strong>trust proxy:</strong> Behind a load balancer/Nginx, set <code>app.set('trust proxy', true)</code> so <code>req.ip</code> and <code>req.protocol</code> reflect the real client (from <code>X-Forwarded-*</code>).</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>res.send vs res.json vs res.end?</summary><p><code>res.end</code> = raw Node (no helpers). <code>res.send</code> = sets Content-Type by type. <code>res.json</code> = forces JSON + stringifies.</p></details>
+  <details><summary>Why "Cannot set headers after they are sent"?</summary><p>You sent a response, then tried to send/modify headers again. Usually a missing <code>return</code> before a second <code>res.*</code> call.</p></details>
+  <details><summary>How do you get the real client IP behind a proxy?</summary><p>Enable <code>trust proxy</code> so Express reads <code>X-Forwarded-For</code>; then <code>req.ip</code> is correct.</p></details>
+</div>

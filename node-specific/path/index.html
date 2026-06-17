@@ -1,0 +1,27 @@
+<h1>Path <span class="tag">Node Core</span></h1>
+<p>The <code>path</code> module manipulates file paths in an OS-agnostic way (Windows <code>\</code> vs POSIX <code>/</code>). Building paths by string concatenation is a bug waiting to happen — always use <code>path</code>.</p>
+
+<h2>Key methods</h2>
+<ul>
+  <li><code>path.join(...segments)</code> — join with the correct separator, normalize <code>..</code> and <code>.</code>.</li>
+  <li><code>path.resolve(...segments)</code> — produce an <strong>absolute</strong> path, resolving from right to left (uses <code>cwd</code> if needed).</li>
+  <li><code>path.basename(p, ext)</code>, <code>path.dirname(p)</code>, <code>path.extname(p)</code>.</li>
+  <li><code>path.parse(p)</code> → <code>{ root, dir, base, name, ext }</code>; <code>path.format()</code> is the inverse.</li>
+  <li><code>path.sep</code>, <code>path.delimiter</code> (<code>:</code> vs <code>;</code> for PATH).</li>
+</ul>
+
+<h2>join vs resolve</h2>
+<ul>
+  <li><code>join('a','b')</code> → <code>'a/b'</code> (relative, just concatenation).</li>
+  <li><code>resolve('a','b')</code> → <code>'/cwd/a/b'</code> (always absolute).</li>
+  <li>A leading <code>/</code> in <code>resolve</code> resets to root: <code>resolve('a','/b')</code> → <code>'/b'</code>.</li>
+</ul>
+
+<div class="callout warn"><strong>Security:</strong> When building a path from user input, <code>path.resolve</code> + check the result stays inside your base dir — otherwise <code>../../etc/passwd</code> path traversal is possible.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>join vs resolve?</summary><p><code>join</code> concatenates + normalizes (stays relative). <code>resolve</code> produces an absolute path, processing segments right-to-left, falling back to cwd.</p></details>
+  <details><summary>How do you prevent path traversal attacks?</summary><p>Resolve the final path, then verify <code>finalPath.startsWith(baseDir)</code> before touching the filesystem.</p></details>
+  <details><summary>How to get <code>__dirname</code> in ESM?</summary><p><code>path.dirname(fileURLToPath(import.meta.url))</code>.</p></details>
+</div>

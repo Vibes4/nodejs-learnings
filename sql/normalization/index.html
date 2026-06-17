@@ -1,0 +1,34 @@
+<h1>Normalization &amp; Schema Design <span class="tag db">SQL</span></h1>
+<p>Normalization organizes tables to eliminate redundancy and update anomalies. You should be able to explain the normal forms and, crucially, <em>when to denormalize</em>.</p>
+
+<h2>Normal forms</h2>
+<ul>
+  <li><strong>1NF</strong> — atomic values, no repeating groups/arrays in a column; each row unique.</li>
+  <li><strong>2NF</strong> — 1NF + no partial dependency (non-key columns depend on the <em>whole</em> composite key).</li>
+  <li><strong>3NF</strong> — 2NF + no transitive dependency (non-key columns depend only on the key, not on other non-key columns).</li>
+  <li><strong>BCNF</strong> — stricter 3NF; every determinant is a candidate key.</li>
+</ul>
+
+<h2>Anomalies normalization prevents</h2>
+<ul>
+  <li><strong>Update anomaly</strong> — change a value in many duplicated rows; miss one → inconsistent data.</li>
+  <li><strong>Insert anomaly</strong> — can't add data without unrelated data.</li>
+  <li><strong>Delete anomaly</strong> — deleting a row loses unrelated facts.</li>
+</ul>
+
+<h2>When to denormalize</h2>
+<ul>
+  <li>Read-heavy reporting/analytics where joins are too slow.</li>
+  <li>Precomputed aggregates / materialized views / caching counts.</li>
+  <li>Accept controlled redundancy for performance — but guard consistency (triggers, jobs).</li>
+</ul>
+
+<div class="callout tip"><strong>Constraints enforce consistency:</strong> PRIMARY KEY, FOREIGN KEY (referential integrity), UNIQUE, NOT NULL, CHECK. They're the relational model's correctness backbone — interviewers expect you to reach for them, not enforce everything in app code.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Explain 1NF, 2NF, 3NF quickly.</summary><p>1NF: atomic columns, unique rows. 2NF: no partial dependency on part of a composite key. 3NF: no transitive dependency between non-key columns.</p></details>
+  <details><summary>Why normalize?</summary><p>To remove redundancy and prevent insert/update/delete anomalies — one fact stored in one place.</p></details>
+  <details><summary>When would you denormalize?</summary><p>For read/reporting performance: precomputed aggregates, fewer joins, materialized views — trading redundancy for speed, with consistency safeguards.</p></details>
+  <details><summary>How is referential integrity enforced?</summary><p>FOREIGN KEY constraints (with ON DELETE/UPDATE actions) plus UNIQUE/NOT NULL/CHECK — at the DB level, not just the app.</p></details>
+</div>

@@ -1,0 +1,29 @@
+<h1>Routing <span class="tag express">Express</span></h1>
+<p>Routing maps an HTTP method + URL pattern to a handler. Express matches routes <strong>in the order they're defined</strong> — first match wins.</p>
+
+<h2>Route patterns</h2>
+<ul>
+  <li><strong>Static:</strong> <code>app.get('/about', ...)</code></li>
+  <li><strong>Route params:</strong> <code>app.get('/users/:id', ...)</code> → <code>req.params.id</code></li>
+  <li><strong>Multiple params:</strong> <code>/users/:userId/posts/:postId</code></li>
+  <li><strong>Optional / wildcards:</strong> <code>/files/*</code>, regex patterns.</li>
+  <li><strong>Query string:</strong> <code>?sort=asc</code> → <code>req.query.sort</code> (not part of the path).</li>
+</ul>
+
+<h2>Chaining &amp; grouping</h2>
+<p><code>app.route('/book')</code> lets you chain <code>.get().post().put()</code> for one path. Multiple handlers can be passed to a route (middleware chain) — call <code>next()</code> to advance.</p>
+
+<div class="callout warn"><strong>Order matters:</strong> Put specific routes before dynamic ones. <code>/users/me</code> must be declared before <code>/users/:id</code>, or <code>:id</code> will capture <code>"me"</code>.</div>
+
+<h2>route params vs query params</h2>
+<ul>
+  <li><strong>Params</strong> (<code>/users/42</code>) identify a resource — part of the path.</li>
+  <li><strong>Query</strong> (<code>?page=2&amp;sort=asc</code>) filter/modify — optional, after <code>?</code>.</li>
+</ul>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How does Express choose which route runs?</summary><p>It tests routes top-to-bottom in registration order; the first method+path match handles the request (unless it calls <code>next()</code>).</p></details>
+  <details><summary>req.params vs req.query vs req.body?</summary><p><code>params</code> = path segments (<code>:id</code>); <code>query</code> = after <code>?</code>; <code>body</code> = request payload (needs a body parser).</p></details>
+  <details><summary>Why might <code>/users/:id</code> shadow <code>/users/new</code>?</summary><p>If <code>:id</code> is declared first, "new" matches as an id. Declare static/specific routes before parameterized ones.</p></details>
+</div>

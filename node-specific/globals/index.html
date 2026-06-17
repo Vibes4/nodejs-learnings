@@ -1,0 +1,35 @@
+<h1>Globals &amp; <code>process</code> <span class="tag">Node Core</span></h1>
+<p>Unlike the browser (where the global object is <code>window</code>), Node's global object is <code>global</code> (or the standard <code>globalThis</code>). Node also injects per-file "pseudo-globals" that are actually arguments to the module wrapper function.</p>
+
+<h2>The module wrapper</h2>
+<p>Every file you write is secretly wrapped by Node like this before execution:</p>
+<div class="code-wrap"><pre><code>(function (exports, require, module, __filename, __dirname) {
+  // your code here
+});</code></pre></div>
+<p>That is why <code>require</code>, <code>module</code>, <code>exports</code>, <code>__dirname</code>, and <code>__filename</code> are available even though you never declared them — and why they are <em>not</em> truly global.</p>
+
+<h2>Key globals</h2>
+<ul>
+  <li><code>process</code> — the running Node process: env vars, args, stdin/stdout, lifecycle.</li>
+  <li><code>__dirname</code> / <code>__filename</code> — absolute path of the current dir/file (CommonJS only).</li>
+  <li><code>global</code> / <code>globalThis</code> — the global namespace.</li>
+  <li><code>Buffer</code>, <code>setTimeout</code>, <code>setImmediate</code>, <code>queueMicrotask</code>, <code>console</code>.</li>
+</ul>
+
+<h2><code>process</code> essentials</h2>
+<ul>
+  <li><code>process.env</code> — environment variables (config, secrets).</li>
+  <li><code>process.argv</code> — CLI arguments array.</li>
+  <li><code>process.cwd()</code> — current working directory (where you ran node, ≠ <code>__dirname</code>).</li>
+  <li><code>process.exit(code)</code> — terminate (0 = success).</li>
+  <li><code>process.on('SIGTERM' | 'uncaughtException' | 'unhandledRejection', cb)</code> — graceful shutdown / safety nets.</li>
+</ul>
+
+<div class="callout tip"><strong>Senior tip:</strong> Never let <code>uncaughtException</code> keep the process alive forever — log, flush, and exit. The process is in an undefined state. Use it only for graceful shutdown, not as a try/catch.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Is <code>__dirname</code> a true global?</summary><p>No. It's a parameter of the module wrapper function, scoped per file. In ES modules it doesn't exist — you derive it from <code>import.meta.url</code>.</p></details>
+  <details><summary>Difference between <code>process.cwd()</code> and <code>__dirname</code>?</summary><p><code>__dirname</code> is where the file <em>lives</em>; <code>process.cwd()</code> is where the process was <em>launched</em> from. They differ when you run a file from another directory.</p></details>
+  <details><summary>How do you do graceful shutdown?</summary><p>Listen for <code>SIGTERM</code>/<code>SIGINT</code>, stop accepting new connections (<code>server.close()</code>), drain in-flight requests, close DB pools, then <code>process.exit(0)</code> with a timeout fallback.</p></details>
+</div>

@@ -1,0 +1,39 @@
+<h1>REST API design <span class="tag express">Express</span></h1>
+<p>Designing clean REST APIs is core senior territory. REST = resources identified by URLs, manipulated with HTTP verbs, communicated via status codes.</p>
+
+<h2>Verbs &amp; semantics</h2>
+<ul>
+  <li><strong>GET</strong> /users — list · /users/:id — read. Safe &amp; idempotent.</li>
+  <li><strong>POST</strong> /users — create. Not idempotent.</li>
+  <li><strong>PUT</strong> /users/:id — full replace. Idempotent.</li>
+  <li><strong>PATCH</strong> /users/:id — partial update.</li>
+  <li><strong>DELETE</strong> /users/:id — remove. Idempotent.</li>
+</ul>
+
+<h2>Status codes that matter</h2>
+<ul>
+  <li><strong>200</strong> OK · <strong>201</strong> Created · <strong>204</strong> No Content (delete).</li>
+  <li><strong>400</strong> Bad Request · <strong>401</strong> Unauthorized · <strong>403</strong> Forbidden · <strong>404</strong> Not Found.</li>
+  <li><strong>409</strong> Conflict · <strong>422</strong> Unprocessable · <strong>429</strong> Too Many Requests.</li>
+  <li><strong>500</strong> Server Error · <strong>503</strong> Unavailable.</li>
+</ul>
+
+<h2>Design principles</h2>
+<ul>
+  <li>Nouns, not verbs, in URLs (<code>/users</code>, not <code>/getUsers</code>).</li>
+  <li>Plural resource names; nest relationships (<code>/users/:id/orders</code>).</li>
+  <li>Versioning: <code>/api/v1/...</code> or header-based.</li>
+  <li>Pagination (<code>?page=&amp;limit=</code> or cursor), filtering, sorting.</li>
+  <li>Consistent error shape; use <strong>idempotency keys</strong> for safe retries on POST.</li>
+  <li>HATEOAS / consistent envelopes are nice-to-have.</li>
+</ul>
+
+<div class="callout tip"><strong>Idempotency:</strong> PUT/DELETE can be retried safely (same result). POST can't by default — clients use an Idempotency-Key header so retries don't double-charge.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>PUT vs PATCH?</summary><p>PUT replaces the entire resource (idempotent); PATCH applies a partial change.</p></details>
+  <details><summary>Which methods are idempotent?</summary><p>GET, PUT, DELETE, HEAD (same effect if repeated). POST and PATCH generally are not.</p></details>
+  <details><summary>How do you version an API?</summary><p>URL prefix (<code>/v1</code>), custom header, or content negotiation. URL prefix is most common and explicit.</p></details>
+  <details><summary>201 vs 200 vs 204?</summary><p>201 after creating (with Location/body), 200 for successful read/update with body, 204 for success with no body (e.g. DELETE).</p></details>
+</div>

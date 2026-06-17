@@ -1,0 +1,31 @@
+<h1>Streams <span class="tag">Node Core</span></h1>
+<p>Streams process data <em>incrementally</em> instead of loading everything into memory. They are the foundation of Node's I/O performance — HTTP requests/responses, file I/O, and compression are all streams.</p>
+
+<h2>Four stream types</h2>
+<ul>
+  <li><strong>Readable</strong> — source you read from (<code>fs.createReadStream</code>, <code>req</code>).</li>
+  <li><strong>Writable</strong> — sink you write to (<code>fs.createWriteStream</code>, <code>res</code>).</li>
+  <li><strong>Duplex</strong> — both (TCP socket).</li>
+  <li><strong>Transform</strong> — duplex that modifies data (<code>zlib.createGzip</code>, crypto).</li>
+</ul>
+
+<h2>Modes of reading</h2>
+<ul>
+  <li><strong>Flowing</strong> — data pushed via <code>'data'</code> events.</li>
+  <li><strong>Paused</strong> — you pull with <code>.read()</code>; <code>for await...of</code> is the modern way.</li>
+</ul>
+
+<h2>pipe &amp; backpressure</h2>
+<p><code>readable.pipe(writable)</code> connects them and automatically handles <strong>backpressure</strong>: if the writable is slower than the readable, pipe pauses the source until the sink drains. This is the killer feature — constant memory regardless of data size.</p>
+
+<div class="callout warn"><strong>Use <code>pipeline()</code>, not <code>.pipe()</code>:</strong> <code>stream.pipeline(src, transform, dest, cb)</code> propagates errors and cleans up file descriptors. Raw <code>.pipe()</code> leaks on errors.</div>
+
+<div class="callout tip"><strong>highWaterMark</strong> sets the internal buffer size (default 16KB for files, 16 objects in object mode). It's the threshold that triggers backpressure.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What problem do streams solve?</summary><p>Processing data larger than RAM and reducing latency (start processing the first byte before the last arrives) — constant memory, better throughput.</p></details>
+  <details><summary>What is backpressure?</summary><p>When the consumer is slower than the producer. <code>pipe</code>/<code>pipeline</code> pause the source until <code>drain</code>, preventing unbounded memory growth.</p></details>
+  <details><summary>pipe vs pipeline?</summary><p><code>pipeline</code> adds proper error propagation and resource cleanup across the whole chain; <code>pipe</code> does not forward errors, risking leaks.</p></details>
+  <details><summary>Give a real example.</summary><p>Streaming a large file to an HTTP response gzipped: <code>pipeline(fs.createReadStream(f), zlib.createGzip(), res)</code>.</p></details>
+</div>

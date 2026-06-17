@@ -1,0 +1,37 @@
+<h1>Indexing &amp; Query Tuning <span class="tag db">SQL</span></h1>
+<p>Indexes are the difference between a 2ms and a 2s query. The default is a <strong>B-tree</strong> index; understanding when it's used (and when it isn't) is core senior knowledge.</p>
+
+<h2>Index types</h2>
+<ul>
+  <li><strong>B-tree</strong> — default; equality, range, sorting, prefix matches.</li>
+  <li><strong>Hash</strong> — equality only.</li>
+  <li><strong>Composite</strong> — multiple columns; leftmost-prefix rule applies.</li>
+  <li><strong>Partial</strong> — index a subset (<code>WHERE active = true</code>).</li>
+  <li><strong>Covering</strong> — includes all columns a query needs → index-only scan.</li>
+  <li>Postgres extras: GIN/GiST (JSONB, full-text, arrays), BRIN (huge ordered tables).</li>
+</ul>
+
+<h2>When an index is NOT used</h2>
+<ul>
+  <li>Function/transform on the column: <code>WHERE lower(email)=...</code> (fix with a functional index).</li>
+  <li>Leading wildcard: <code>LIKE '%foo'</code>.</li>
+  <li>Implicit type cast, or low selectivity (planner decides a scan is cheaper).</li>
+  <li>Composite index but query skips the leftmost column.</li>
+</ul>
+
+<h2>EXPLAIN ANALYZE</h2>
+<ul>
+  <li><strong>Index Scan / Index Only Scan</strong> = good; <strong>Seq Scan</strong> on a big table = investigate.</li>
+  <li>Compare estimated vs actual rows — large gaps mean stale stats (<code>ANALYZE</code>).</li>
+  <li>Look for expensive Sort/Hash spilling to disk.</li>
+</ul>
+
+<div class="callout warn"><strong>Trade-off:</strong> every index speeds reads but slows INSERT/UPDATE/DELETE and uses storage. Index the columns you actually filter, join, and sort on — then drop the unused ones.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why isn't my index being used?</summary><p>A function on the column, leading wildcard, type mismatch, low selectivity, or skipping the leftmost composite column. EXPLAIN shows the chosen plan.</p></details>
+  <details><summary>What is a covering index?</summary><p>An index containing every column the query needs, so the engine never touches the table (index-only scan).</p></details>
+  <details><summary>Leftmost-prefix rule?</summary><p>A composite index on (a,b,c) serves filters on a, a+b, a+b+c — but not b or c alone.</p></details>
+  <details><summary>How do you debug a slow query?</summary><p>EXPLAIN ANALYZE → find seq scans / bad estimates / disk sorts → add/adjust indexes, rewrite the query, update stats.</p></details>
+</div>

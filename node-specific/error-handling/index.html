@@ -1,0 +1,52 @@
+<h1>Error Handling in Node.js <span class="tag">Node Core</span></h1>
+<p>Node has <strong>four distinct error channels</strong> depending on how the code is written. Using the wrong one (e.g. try/catch around an async callback) silently misses errors — a classic senior trap.</p>
+
+<h2>1. Synchronous errors → try/catch</h2>
+<div class="code-wrap"><pre><code>try {
+  const data = JSON.parse(badInput);   // throws synchronously
+} catch (err) {
+  console.error('handled:', err.message);
+}</code></pre></div>
+<p>try/catch only catches <strong>synchronous</strong> throws. It will <em>not</em> catch errors thrown later inside a callback or an unawaited promise.</p>
+
+<h2>2. Error-first callbacks → <code>(err, data)</code></h2>
+<div class="code-wrap"><pre><code>fs.readFile('x.txt', (err, data) => {
+  if (err) return handle(err);   // ALWAYS check err first
+  use(data);
+});</code></pre></div>
+<p>Node's core convention: the first callback argument is the error (or <code>null</code>). A <code>try/catch</code> around <code>fs.readFile</code> catches nothing — the error arrives in the callback.</p>
+
+<h2>3. Promises / async-await → .catch or try/catch</h2>
+<div class="code-wrap"><pre><code>// promise chain
+doAsync().then(use).catch(handle);
+
+// async/await — try/catch DOES work here
+try { const data = await doAsync(); }
+catch (err) { handle(err); }</code></pre></div>
+
+<h2>4. EventEmitter → the <code>'error'</code> event</h2>
+<div class="code-wrap"><pre><code>stream.on('error', (err) => handle(err));
+// If an emitter emits 'error' with NO listener, Node throws & crashes.</code></pre></div>
+
+<h2>Process-level safety nets (last resort)</h2>
+<ul>
+  <li><code>process.on('uncaughtException', cb)</code> — a synchronous error escaped everything.</li>
+  <li><code>process.on('unhandledRejection', cb)</code> — a promise rejected with no <code>.catch</code>.</li>
+</ul>
+<div class="callout warn"><strong>These are not a try/catch.</strong> After an <code>uncaughtException</code> the process is in an undefined state — <strong>log, flush, and exit</strong>, then let a process manager restart you. Don't resume normal work.</div>
+
+<h2>Custom error classes</h2>
+<div class="code-wrap"><pre><code>class AppError extends Error {
+  constructor(message, code) { super(message); this.name = 'AppError'; this.code = code; }
+}
+throw new AppError('not found', 404);</code></pre></div>
+<p>Distinguish <strong>operational</strong> errors (expected: bad input, network down — handle &amp; continue) from <strong>programmer</strong> errors (bugs: undefined is not a function — let it crash).</p>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why doesn't try/catch catch an async error?</summary><p>try/catch only wraps the synchronous call stack. By the time a callback or promise settles, the try block has already exited. Use error-first callbacks, <code>.catch</code>, or <code>await</code> inside try/catch.</p></details>
+  <details><summary>What happens on an unhandled 'error' event?</summary><p>If an EventEmitter emits <code>'error'</code> and nothing is listening, Node throws it as an uncaught exception and the process crashes.</p></details>
+  <details><summary>uncaughtException vs unhandledRejection?</summary><p>The first is a thrown sync error nobody caught; the second is a rejected promise with no rejection handler. Both are last-resort hooks — log and exit, don't continue.</p></details>
+  <details><summary>Operational vs programmer errors?</summary><p>Operational = expected runtime failures you handle gracefully (retry, 4xx). Programmer = bugs you should fix; crashing + restarting is often the safest response.</p></details>
+  <details><summary>Should you swallow errors in a catch?</summary><p>Never silently. At minimum log with context; rethrow or translate to a typed error so callers can react.</p></details>
+</div>

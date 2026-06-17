@@ -1,0 +1,36 @@
+<h1>Validation &amp; security <span class="tag express">Express</span></h1>
+<p>Never trust client input. Validation + a few security middlewares cover most of the OWASP basics interviewers probe.</p>
+
+<h2>Input validation</h2>
+<ul>
+  <li><strong>express-validator</strong> — middleware-style validation/sanitization.</li>
+  <li><strong>Joi</strong> / <strong>Zod</strong> — schema-based validation (Zod is TS-first and popular).</li>
+  <li>Validate types, ranges, formats; sanitize (trim, escape); reject unknown fields.</li>
+</ul>
+
+<h2>Security middleware</h2>
+<ul>
+  <li><strong>helmet</strong> — sets safe HTTP headers (CSP, HSTS, X-Frame-Options, etc.).</li>
+  <li><strong>cors</strong> — controls cross-origin access; never blindly use <code>origin: '*'</code> with credentials.</li>
+  <li><strong>express-rate-limit</strong> — throttle requests (brute-force / DoS protection).</li>
+  <li><strong>hpp</strong> — HTTP parameter pollution; <strong>express-mongo-sanitize</strong> — strip <code>$</code>/<code>.</code> operators.</li>
+</ul>
+
+<h2>Common vulnerabilities to mention</h2>
+<ul>
+  <li><strong>SQL/NoSQL injection</strong> — use parameterized queries / sanitize operators.</li>
+  <li><strong>XSS</strong> — escape output, set CSP.</li>
+  <li><strong>CSRF</strong> — same-site cookies / CSRF tokens for cookie-based auth.</li>
+  <li><strong>Secrets</strong> — in env vars, never in code; rotate keys.</li>
+  <li>Disable <code>x-powered-by</code>; keep deps patched (<code>npm audit</code>).</li>
+</ul>
+
+<div class="callout warn"><strong>Validate at the boundary.</strong> Reject bad input early with 400/422 before it touches your DB or business logic. Whitelist, don't blacklist.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How do you prevent NoSQL injection in Mongo?</summary><p>Validate/cast input types, avoid passing raw objects as query operators, use <code>express-mongo-sanitize</code> to strip <code>$</code>/<code>.</code>, and use schema validation.</p></details>
+  <details><summary>What does helmet do?</summary><p>Sets a bundle of security-related HTTP headers (CSP, HSTS, no-sniff, frameguard) with sensible defaults.</p></details>
+  <details><summary>CORS in one sentence?</summary><p>A browser security mechanism; the server uses CORS headers to declare which origins may call it. Configure explicitly; avoid <code>*</code> with credentials.</p></details>
+  <details><summary>Where should validation live?</summary><p>At the API boundary as middleware, before controllers — plus DB-level constraints as defense in depth.</p></details>
+</div>

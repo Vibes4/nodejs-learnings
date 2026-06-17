@@ -1,0 +1,30 @@
+<h1>Router (modular routes) <span class="tag express">Express</span></h1>
+<p><code>express.Router()</code> is a mini-app: a self-contained group of routes + middleware you can mount under a path. It's how you keep large apps organized instead of one giant file.</p>
+
+<h2>Pattern</h2>
+<div class="code-wrap"><pre><code>// routes/users.js
+const router = express.Router();
+router.get('/', listUsers);
+router.get('/:id', getUser);
+module.exports = router;
+
+// app.js
+app.use('/api/users', require('./routes/users'));</code></pre></div>
+<p>Now <code>GET /api/users/42</code> hits the router's <code>/:id</code> handler. The mount path is stripped before matching inside the router.</p>
+
+<h2>Why use it</h2>
+<ul>
+  <li><strong>Modularity</strong> — one file per resource (users, orders, auth).</li>
+  <li><strong>Router-level middleware</strong> — apply auth to a whole router with <code>router.use(auth)</code>.</li>
+  <li><strong>Versioning</strong> — mount <code>/api/v1</code> and <code>/api/v2</code> separately.</li>
+  <li><code>mergeParams: true</code> — access parent params in nested routers.</li>
+</ul>
+
+<div class="callout tip"><strong>Typical structure:</strong> <code>routes/</code> (route definitions) → <code>controllers/</code> (handlers) → <code>services/</code> (business logic) → <code>models/</code> (data). Routers tie the HTTP layer to controllers.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What is express.Router()?</summary><p>An isolated, mountable collection of routes and middleware — a "mini Express app" for modularizing a codebase.</p></details>
+  <details><summary>How do you apply auth to an entire group of routes?</summary><p><code>router.use(authMiddleware)</code> at the top of the router, or pass it when mounting: <code>app.use('/admin', auth, adminRouter)</code>.</p></details>
+  <details><summary>How do nested routers see parent params?</summary><p>Create the child router with <code>express.Router({ mergeParams: true })</code>.</p></details>
+</div>

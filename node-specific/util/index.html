@@ -1,0 +1,24 @@
+<h1>Util <span class="tag">Node Core</span></h1>
+<p>The <code>util</code> module is a grab-bag of helpers. Two are interview-relevant: <code>promisify</code> and <code>util.inspect</code>.</p>
+
+<h2><code>util.promisify</code></h2>
+<p>Converts an error-first callback function into one that returns a Promise — so you can <code>await</code> legacy callback APIs.</p>
+<div class="code-wrap"><pre><code>const readFile = util.promisify(fs.readFile);
+const data = await readFile('x.txt', 'utf8');</code></pre></div>
+<p>The inverse is <code>util.callbackify</code> (promise → callback). Note many core modules now ship promise versions natively (<code>fs/promises</code>, <code>timers/promises</code>).</p>
+
+<h2><code>util.inspect</code></h2>
+<p>How Node renders objects in <code>console.log</code>. Control depth/colors: <code>util.inspect(obj, { depth: null, colors: true })</code> — handy for deep nested objects that otherwise print <code>[Object]</code>.</p>
+
+<h2>Other useful bits</h2>
+<ul>
+  <li><code>util.types.isXxx</code> — reliable runtime type checks (e.g. <code>isAsyncFunction</code>, <code>isDate</code>).</li>
+  <li><code>util.format</code> — printf-style string formatting (<code>%s</code>, <code>%d</code>, <code>%j</code>).</li>
+  <li><code>util.deprecate</code> — wrap a function to emit a deprecation warning.</li>
+</ul>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What does <code>util.promisify</code> require of a function?</summary><p>It must follow the error-first callback convention <code>(err, result)</code> with the callback as the last argument.</p></details>
+  <details><summary>Why does console.log show <code>[Object]</code> sometimes?</summary><p>Default inspect depth is 2. Use <code>util.inspect(obj,{depth:null})</code> or <code>console.dir(obj,{depth:null})</code>.</p></details>
+</div>

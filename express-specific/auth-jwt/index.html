@@ -1,0 +1,29 @@
+<h1>Authentication (JWT) <span class="tag express">Express</span></h1>
+<p>Authentication = who you are; authorization = what you can do. The two dominant patterns are <strong>sessions</strong> and <strong>JWT tokens</strong>.</p>
+
+<h2>Sessions vs JWT</h2>
+<ul>
+  <li><strong>Session (stateful):</strong> server stores session, client holds a session-id cookie. Easy to revoke; needs shared store (Redis) when scaled.</li>
+  <li><strong>JWT (stateless):</strong> signed token holds the claims; server verifies the signature, stores nothing. Scales horizontally; harder to revoke before expiry.</li>
+</ul>
+
+<h2>JWT structure</h2>
+<p>Three base64url parts: <code>header.payload.signature</code>. The signature (HMAC with a secret, or RSA/EC private key) proves integrity. <strong>The payload is NOT encrypted</strong> — anyone can read it; never put secrets in it.</p>
+
+<h2>Access + refresh tokens</h2>
+<ul>
+  <li><strong>Access token</strong> — short-lived (e.g. 15 min), sent on every request.</li>
+  <li><strong>Refresh token</strong> — long-lived, stored securely (httpOnly cookie / DB), used to mint new access tokens. Can be revoked.</li>
+</ul>
+
+<div class="callout warn"><strong>Storage:</strong> Prefer <code>httpOnly</code>, <code>Secure</code>, <code>SameSite</code> cookies over <code>localStorage</code> (which is XSS-readable). Always validate <code>exp</code>, <code>iss</code>, <code>aud</code>; use a strong secret/keys.</div>
+
+<div class="callout tip"><strong>Libraries:</strong> <code>jsonwebtoken</code> for tokens, <code>bcrypt</code>/<code>argon2</code> for password hashing, <code>passport</code> for strategies (OAuth, local, JWT).</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Session vs JWT trade-offs?</summary><p>Sessions: stateful, easy revoke, needs store. JWT: stateless, scales, but revocation is hard before expiry (need a blocklist or short TTL + refresh).</p></details>
+  <details><summary>Is JWT payload encrypted?</summary><p>No — only signed. It's base64, readable by anyone. Don't store secrets; use JWE if you need encryption.</p></details>
+  <details><summary>How do you revoke a JWT?</summary><p>Short-lived access tokens + revocable refresh tokens, or a server-side token blocklist/version check.</p></details>
+  <details><summary>Where to store the token client-side?</summary><p>httpOnly Secure SameSite cookie (mitigates XSS theft); pair with CSRF protection. Avoid localStorage for sensitive tokens.</p></details>
+</div>

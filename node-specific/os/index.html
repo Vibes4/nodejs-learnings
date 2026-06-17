@@ -1,0 +1,20 @@
+<h1>OS <span class="tag">Node Core</span></h1>
+<p>The <code>os</code> module exposes operating-system info: CPUs, memory, network, platform. Useful for health checks, sizing worker/cluster counts, and diagnostics.</p>
+
+<h2>Key methods</h2>
+<ul>
+  <li><code>os.cpus()</code> — array of logical cores (use <code>.length</code> to size a cluster).</li>
+  <li><code>os.totalmem()</code> / <code>os.freemem()</code> — RAM in bytes.</li>
+  <li><code>os.loadavg()</code> — 1/5/15-min load averages (POSIX only).</li>
+  <li><code>os.platform()</code> (<code>'linux'|'darwin'|'win32'</code>), <code>os.arch()</code>, <code>os.release()</code>.</li>
+  <li><code>os.hostname()</code>, <code>os.uptime()</code>, <code>os.networkInterfaces()</code>.</li>
+  <li><code>os.tmpdir()</code>, <code>os.homedir()</code>, <code>os.EOL</code> (line ending).</li>
+</ul>
+
+<div class="callout tip"><strong>Senior tip:</strong> Use <code>os.cpus().length</code> to decide how many workers to fork in <code>cluster</code> — typically one per core for CPU-bound work.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How do you decide cluster worker count?</summary><p>Usually <code>os.cpus().length</code> (one worker per logical core), but in containers respect CPU limits (cgroups) — <code>os.cpus()</code> may over-report.</p></details>
+  <details><summary>process.memoryUsage() vs os.freemem()?</summary><p><code>process.memoryUsage()</code> = this Node process (rss, heapUsed). <code>os.freemem()</code> = whole machine. For leak detection watch <code>heapUsed</code>.</p></details>
+</div>

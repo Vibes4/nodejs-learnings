@@ -1,0 +1,31 @@
+<h1>Aggregation Pipeline <span class="tag db">MongoDB</span></h1>
+<p>The aggregation pipeline transforms documents through a sequence of <strong>stages</strong>, each feeding the next — MongoDB's answer to SQL <code>GROUP BY</code>, joins, and analytics.</p>
+
+<h2>Common stages (order matters)</h2>
+<ul>
+  <li><code>$match</code> — filter (like WHERE). Put it <strong>first</strong> to use indexes and shrink the dataset early.</li>
+  <li><code>$group</code> — aggregate by a key with accumulators (<code>$sum</code>, <code>$avg</code>, <code>$max</code>, <code>$push</code>).</li>
+  <li><code>$project</code> — reshape/select fields (like SELECT).</li>
+  <li><code>$sort</code> / <code>$limit</code> / <code>$skip</code> — order &amp; paginate.</li>
+  <li><code>$lookup</code> — left outer join to another collection.</li>
+  <li><code>$unwind</code> — flatten an array into one doc per element.</li>
+  <li><code>$facet</code> — run multiple sub-pipelines in one pass (e.g. data + count).</li>
+</ul>
+
+<h2>Performance rules</h2>
+<ul>
+  <li><strong>$match and $sort early</strong> so they can use indexes (only the first stages can).</li>
+  <li><code>$project</code> to drop big unused fields before heavy stages.</li>
+  <li>Watch the 100MB per-stage memory limit — use <code>allowDiskUse</code> or index-backed sorts.</li>
+  <li>Verify with <code>.explain()</code>; <code>$lookup</code> on unindexed foreign fields is slow.</li>
+</ul>
+
+<div class="callout tip"><strong>SQL ↔ Mongo:</strong> <code>WHERE</code>→<code>$match</code>, <code>GROUP BY</code>→<code>$group</code>, <code>SELECT</code>→<code>$project</code>, <code>JOIN</code>→<code>$lookup</code>, <code>ORDER BY</code>→<code>$sort</code>, <code>HAVING</code>→<code>$match</code> after <code>$group</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why put $match first?</summary><p>Early filtering reduces documents flowing downstream and lets the stage use indexes — only leading stages can leverage an index.</p></details>
+  <details><summary>$group accumulators you'd name?</summary><p><code>$sum</code>, <code>$avg</code>, <code>$min</code>/<code>$max</code>, <code>$push</code>, <code>$addToSet</code>, <code>$first</code>/<code>$last</code>.</p></details>
+  <details><summary>How do you join collections?</summary><p><code>$lookup</code> (left outer join); index the foreign field. Follow with <code>$unwind</code> if you want one row per match.</p></details>
+  <details><summary>aggregate vs find?</summary><p><code>find</code> is for simple filtered reads; aggregation does multi-stage transforms, grouping, joins, and computed fields.</p></details>
+</div>

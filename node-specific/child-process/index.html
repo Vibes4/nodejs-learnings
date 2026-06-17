@@ -1,0 +1,27 @@
+<h1>Child Process <span class="tag">Node Core</span></h1>
+<p>The <code>child_process</code> module runs external commands and other Node scripts in separate OS processes — the way to leverage multiple cores or shell out to system tools.</p>
+
+<h2>Four ways to spawn</h2>
+<ul>
+  <li><strong><code>spawn(cmd, args)</code></strong> — streams stdout/stderr. Best for large/long output (no buffer limit). No shell by default.</li>
+  <li><strong><code>exec(cmdString)</code></strong> — runs in a shell, <strong>buffers</strong> all output into a callback. Convenient but capped by <code>maxBuffer</code> (default ~1MB).</li>
+  <li><strong><code>execFile(file, args)</code></strong> — like exec but no shell (safer, faster).</li>
+  <li><strong><code>fork(modulePath)</code></strong> — special spawn for Node scripts with a built-in IPC channel (<code>child.send</code> / <code>process.on('message')</code>).</li>
+</ul>
+
+<h2>spawn vs exec — the classic question</h2>
+<ul>
+  <li><code>spawn</code> = streaming, unbounded, no shell → use for big output / long-running.</li>
+  <li><code>exec</code> = buffered, shell, simple → use for short commands; risky with user input (shell injection).</li>
+</ul>
+
+<div class="callout warn"><strong>Security:</strong> Never pass unsanitized user input to <code>exec</code> (runs in a shell → command injection). Prefer <code>execFile</code>/<code>spawn</code> with an args array and <code>shell:false</code>.</div>
+
+<div class="callout tip"><strong>When to reach for it:</strong> CPU-bound work that would block the event loop, or wrapping CLI tools (ffmpeg, git). For sharing the same server port across cores, use <code>cluster</code>; for in-process CPU parallelism, <code>worker_threads</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>spawn vs exec vs fork?</summary><p><code>spawn</code>: streamed output, no buffer cap. <code>exec</code>: shell + buffered output. <code>fork</code>: spawn a Node module with an IPC channel for messaging.</p></details>
+  <details><summary>How do parent and forked child communicate?</summary><p>Over IPC: <code>child.send(msg)</code> / <code>child.on('message')</code> in the parent, and <code>process.on('message')</code> / <code>process.send()</code> in the child.</p></details>
+  <details><summary>child_process vs worker_threads?</summary><p>child_process = separate OS process (separate memory, heavier, can run any program). worker_threads = threads in the same process sharing memory via <code>SharedArrayBuffer</code> (lighter, JS only).</p></details>
+</div>

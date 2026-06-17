@@ -1,0 +1,169 @@
+/* Component + content theming via CSS variables.
+   Tailwind (in index.html) handles the shell layout + the .dark class on <html>.
+   These variables flip when html.dark is set, so every module fragment is dark-aware. */
+
+:root {
+  --content-text: #24292f;
+  --heading: #1f2328;
+  --border-soft: #eaecef;
+  --muted: #656d76;
+  --link: #0969da;
+  --accent: #1a7f37;
+
+  --nav-text: #475569;
+  --nav-muted: #94a3b8;
+  --nav-hover: #e2e8f0;
+  --nav-active-bg: #e2e8f0;
+  --nav-active-text: #0f172a;
+  --nav-group: #64748b;
+
+  --code-bg: #0d1117;
+  --code-text: #e6edf3;
+  --code-head-bg: #161b22;
+
+  --inline-bg: #eef0f2;
+  --inline-text: #cf222e;
+
+  --callout-bg: #f0f7ff;       --callout-border: #58a6ff;
+  --callout-warn-bg: #fff5f5;  --callout-warn-border: #d1242f;
+  --callout-tip-bg: #f2fbf4;   --callout-tip-border: #2ea043;
+
+  --interview-bg: #fbfbf8; --interview-border: #e7e5d8; --interview-heading: #9a6700;
+
+  --tag-bg: #ddf4e4;  --tag-text: #1a7f37;
+  --tag-express-bg: #e7e1ff; --tag-express-text: #6639ba;
+  --tag-db-bg: #fff1e0; --tag-db-text: #bc4c00;
+
+  --copy-bg: #21262d; --copy-border: #30363d;
+  --table-border: #e2e8f0;
+
+  --scroll-track: #f1f5f9; --scroll-thumb: #cbd5e1; --scroll-thumb-hover: #94a3b8;
+}
+
+html.dark {
+  --content-text: #cbd5e1;
+  --heading: #f1f5f9;
+  --border-soft: #1e293b;
+  --muted: #94a3b8;
+  --link: #58a6ff;
+  --accent: #4ade80;
+
+  --nav-text: #cbd5e1;
+  --nav-muted: #64748b;
+  --nav-hover: #1e293b;
+  --nav-active-bg: #1e293b;
+  --nav-active-text: #ffffff;
+  --nav-group: #64748b;
+
+  --code-bg: #0b1020;
+  --code-text: #e6edf3;
+  --code-head-bg: #111827;
+
+  --inline-bg: #1e293b;
+  --inline-text: #fca5a5;
+
+  --callout-bg: #0f243f;       --callout-border: #3b82f6;
+  --callout-warn-bg: #3a1212;  --callout-warn-border: #ef4444;
+  --callout-tip-bg: #0f2a1a;   --callout-tip-border: #22c55e;
+
+  --interview-bg: #1c1917; --interview-border: #44403c; --interview-heading: #fbbf24;
+
+  --tag-bg: #14532d;  --tag-text: #bbf7d0;
+  --tag-express-bg: #3b2f63; --tag-express-text: #ddd6fe;
+  --tag-db-bg: #4a2c0c; --tag-db-text: #fed7aa;
+
+  --copy-bg: #1e293b; --copy-border: #334155;
+  --table-border: #334155;
+
+  --scroll-track: #0b1020; --scroll-thumb: #334155; --scroll-thumb-hover: #475569;
+}
+
+/* ---------- Smooth scrolling + themed scrollbars ---------- */
+html { scroll-behavior: smooth; }
+#sidebar, #content, pre { scroll-behavior: smooth; }
+
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+
+/* WebKit / Chromium / Safari */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--scroll-track); border-radius: 8px; }
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* ---------- Sidebar nav (built by app.js) ---------- */
+.nav-group-title {
+  padding: 16px 16px 6px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--nav-group);
+  font-weight: 700;
+}
+.nav-item {
+  display: block;
+  padding: 8px 16px;
+  font-size: 13.5px;
+  color: var(--nav-text);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+.nav-item small { display: block; color: var(--nav-muted); font-size: 11px; margin-top: 2px; }
+.nav-item:hover { background: var(--nav-hover); }
+.nav-item.active { background: var(--nav-active-bg); border-left-color: var(--accent); color: var(--nav-active-text); }
+
+/* ---------- Content ---------- */
+#content {color: var(--content-text); }
+#content h1 { font-size: 28px; margin-bottom: 4px; color: var(--heading); }
+#content h2 { font-size: 20px; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-soft); color: var(--heading); }
+#content h3 { font-size: 16px; margin: 20px 0 8px; color: var(--heading); }
+#content p { line-height: 1.65; margin: 10px 0; }
+#content ul, #content ol { margin: 10px 0 10px 24px; line-height: 1.7; }
+#content li { margin: 4px 0; }
+#content a { color: var(--link); }
+#content table th, #content table td { border: 1px solid var(--table-border); padding: 5px 8px; }
+#content table th { text-align: center; }
+
+.tag {
+  display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+  background: var(--tag-bg); color: var(--tag-text); font-weight: 600; margin-left: 8px; vertical-align: middle;
+}
+.tag.express { background: var(--tag-express-bg); color: var(--tag-express-text); }
+.tag.db { background: var(--tag-db-bg); color: var(--tag-db-text); }
+
+code:not(pre code) {
+  background: var(--inline-bg); padding: 1.5px 6px; border-radius: 5px;
+  font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; color: var(--inline-text);
+}
+
+.callout { border-left: 4px solid var(--callout-border); background: var(--callout-bg); padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+.callout.warn { border-left-color: var(--callout-warn-border); background: var(--callout-warn-bg); }
+.callout.tip  { border-left-color: var(--callout-tip-border); background: var(--callout-tip-bg); }
+.callout strong { display: inline-block; margin-bottom: 2px; }
+
+.interview { background: var(--interview-bg); border: 1px solid var(--interview-border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; }
+.interview h3 { margin-top: 0; color: var(--interview-heading); }
+.interview details { margin: 8px 0; }
+.interview summary { cursor: pointer; font-weight: 600; color: var(--heading); padding: 4px 0; }
+.interview details p { margin: 6px 0 6px 14px; font-size: 14px; }
+
+/* ---------- Code block ---------- */
+.code-wrap { margin: 16px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--copy-border); }
+.code-head { display: flex; align-items: center; justify-content: space-between; background: var(--code-head-bg); color: #c9d1d9; padding: 8px 14px; font-size: 12.5px; font-family: "SF Mono", Menlo, Consolas, monospace; }
+.code-head .run-cmd { color: #7ee787; }
+.copy-btn { background: var(--copy-bg); border: 1px solid var(--copy-border); color: #c9d1d9; border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+.copy-btn:hover { filter: brightness(1.3); }
+pre { background: var(--code-bg); color: var(--code-text); padding: 16px; overflow-x: auto; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; line-height: 1.55; margin: 0; }
+
+.placeholder { color: var(--muted); text-align: center; margin-top: 100px; }
+.placeholder h2 { border: none; color: var(--heading); }
+
+.run-banner { background: var(--code-bg); color: #7ee787; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; padding: 10px 14px; border-radius: 6px; margin: 14px 0; display: inline-block; }
+.run-banner span { color: #8b949e; }

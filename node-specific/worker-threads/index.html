@@ -1,0 +1,29 @@
+<h1>Worker Threads <span class="tag">Node Core</span></h1>
+<p><code>worker_threads</code> run JavaScript on real OS threads <em>inside the same process</em>, sharing memory. They're the right tool for <strong>CPU-bound</strong> work (image processing, parsing, encryption, big calculations) that would otherwise block the event loop.</p>
+
+<h2>Why they exist</h2>
+<p>Node's event loop is single-threaded for JS. A heavy synchronous computation freezes <em>all</em> requests. Worker threads move that computation off the main thread so the event loop stays responsive.</p>
+
+<h2>Key pieces</h2>
+<ul>
+  <li><code>new Worker(file, { workerData })</code> — start a thread.</li>
+  <li><code>parentPort.postMessage()</code> / <code>worker.on('message')</code> — message passing (structured clone).</li>
+  <li><code>workerData</code> — initial data passed into the worker.</li>
+  <li><code>SharedArrayBuffer</code> + <code>Atomics</code> — true shared memory (no copy), for high-performance cases.</li>
+</ul>
+
+<h2>worker_threads vs child_process vs cluster</h2>
+<ul>
+  <li><strong>worker_threads</strong> — threads, shared memory, CPU-bound JS work.</li>
+  <li><strong>child_process</strong> — separate processes, run any program, heavier isolation.</li>
+  <li><strong>cluster</strong> — processes that share a server socket to scale a network server.</li>
+</ul>
+
+<div class="callout tip"><strong>Rule of thumb:</strong> I/O-bound → stay on the event loop (async). CPU-bound → worker threads (or a job queue). Scale a web server across cores → cluster / PM2 / containers.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>When do you use worker threads?</summary><p>For CPU-bound tasks that block the loop. I/O is already non-blocking, so threads don't help there.</p></details>
+  <details><summary>Do worker threads share memory?</summary><p>Messages are copied (structured clone) by default. For true sharing use <code>SharedArrayBuffer</code> + <code>Atomics</code>.</p></details>
+  <details><summary>Threads vs cluster for an HTTP API?</summary><p>To use all cores for request handling, cluster (separate processes sharing the port). Worker threads are for offloading specific heavy computations within a process.</p></details>
+</div>

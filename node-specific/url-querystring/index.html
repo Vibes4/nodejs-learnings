@@ -1,0 +1,20 @@
+<h1>URL &amp; Query String <span class="tag">Node Core</span></h1>
+<p>Parsing URLs and query strings correctly matters for routing, redirects, and security. The modern <strong>WHATWG <code>URL</code></strong> class replaces the legacy <code>url.parse()</code>.</p>
+
+<h2>The <code>URL</code> class (preferred)</h2>
+<ul>
+  <li><code>new URL(input, base?)</code> — parses into <code>protocol, host, hostname, port, pathname, search, hash</code>.</li>
+  <li><code>url.searchParams</code> — a <code>URLSearchParams</code> object: <code>.get()</code>, <code>.getAll()</code>, <code>.set()</code>, <code>.append()</code>, iterate.</li>
+</ul>
+
+<h2><code>URLSearchParams</code></h2>
+<p>Handles encoding/decoding automatically, supports repeated keys (<code>?a=1&amp;a=2</code> → <code>getAll('a') = ['1','2']</code>), and serializes back with <code>toString()</code>.</p>
+
+<div class="callout warn"><strong>Legacy <code>querystring</code> + <code>url.parse()</code></strong> are still around but discouraged: <code>url.parse</code> has known parsing quirks/security issues. Prefer the <code>URL</code> class.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Legacy <code>url.parse</code> vs WHATWG <code>URL</code>?</summary><p>The <code>URL</code> class is standards-compliant (same as browsers), safer, and gives you <code>searchParams</code>. <code>url.parse</code> is legacy with edge-case bugs.</p></details>
+  <details><summary>How do repeated query keys behave?</summary><p><code>searchParams.get</code> returns the first; <code>getAll</code> returns all values as an array.</p></details>
+  <details><summary>Why not build query strings by concatenation?</summary><p>You must URL-encode values (spaces, &amp;, =). <code>URLSearchParams</code> encodes for you, preventing injection/breakage.</p></details>
+</div>

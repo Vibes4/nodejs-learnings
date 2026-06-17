@@ -1,0 +1,39 @@
+<h1>SQL (Postgres / MySQL) <span class="tag db">DB</span></h1>
+<p>Relational databases store normalized data in tables with enforced schemas and relationships. In Node you use a driver (<code>pg</code>, <code>mysql2</code>), a query builder (<strong>Knex</strong>), or an ORM (<strong>Prisma</strong>, <strong>Sequelize</strong>, <strong>TypeORM</strong>).</p>
+
+<h2>Connection pooling (critical)</h2>
+<p>Opening a connection per request is slow and exhausts the DB. Always use a <strong>pool</strong> — a fixed set of reusable connections. Tune pool size to your DB's <code>max_connections</code> and worker count.</p>
+
+<h2>Parameterized queries — always</h2>
+<div class="code-wrap"><pre><code>// SAFE — values are bound, not concatenated
+pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+// VULNERABLE — never do this (SQL injection)
+pool.query(`SELECT * FROM users WHERE email = '${email}'`);</code></pre></div>
+
+<h2>Joins, transactions, indexes</h2>
+<ul>
+  <li><strong>JOINs</strong> — INNER (matches only), LEFT (all left + matched right), etc.</li>
+  <li><strong>Transactions</strong> — <code>BEGIN … COMMIT/ROLLBACK</code> for atomic multi-statement writes (ACID). Use one connection from the pool for the whole transaction.</li>
+  <li><strong>Indexes</strong> — B-tree on filtered/joined/sorted columns; verify with <code>EXPLAIN ANALYZE</code>. Beware over-indexing (slows writes).</li>
+  <li><strong>Isolation levels</strong> — Read Committed (default in PG) → Serializable; understand dirty/non-repeatable/phantom reads.</li>
+</ul>
+
+<h2>SQL vs NoSQL (the classic)</h2>
+<ul>
+  <li><strong>SQL</strong> — strong schema, relations, ACID, complex joins/reporting. Vertical scaling first.</li>
+  <li><strong>NoSQL</strong> — flexible schema, horizontal scale, denormalized, eventual consistency options.</li>
+  <li>Choose by data shape &amp; access patterns, not hype. Many systems use both.</li>
+</ul>
+
+<div class="callout warn"><strong>N+1 query problem:</strong> fetching a list then querying per-row in a loop. Fix with a JOIN or a single <code>WHERE id IN (...)</code>. ORMs hide this — watch the logs.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why connection pooling?</summary><p>Connections are expensive to establish and DBs cap them. A pool reuses a bounded set, cutting latency and preventing exhaustion.</p></details>
+  <details><summary>How do you prevent SQL injection?</summary><p>Parameterized/prepared statements (bound values), never string interpolation. ORMs/builders do this by default.</p></details>
+  <details><summary>What are ACID and isolation levels?</summary><p>Atomicity, Consistency, Isolation, Durability. Isolation levels (Read Uncommitted → Serializable) trade consistency for concurrency, preventing dirty/non-repeatable/phantom reads.</p></details>
+  <details><summary>INNER vs LEFT JOIN?</summary><p>INNER returns only matching rows; LEFT returns all left rows with NULLs where no right match exists.</p></details>
+  <details><summary>When SQL vs NoSQL?</summary><p>SQL for relational, transactional, report-heavy data with a stable schema; NoSQL for flexible/denormalized data needing horizontal scale and high write throughput.</p></details>
+  <details><summary>How do you debug a slow query?</summary><p><code>EXPLAIN ANALYZE</code> — look for seq scans on big tables, missing indexes, bad join order, high row estimates vs actual.</p></details>
+</div>

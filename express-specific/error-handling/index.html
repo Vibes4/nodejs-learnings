@@ -1,0 +1,68 @@
+<h1>Error Handling in Express <span class="tag express">Express</span></h1>
+<p>Express routes errors through its <strong>middleware pipeline</strong>. The key is the error-handling middleware, identified by its <strong>four arguments</strong> <code>(err, req, res, next)</code>. You can attach handlers at several <em>levels</em> — application, router, and route.</p>
+
+<h2>The middleware levels (where handlers live)</h2>
+<ul>
+  <li><strong>Application-level</strong> — <code>app.use(...)</code> / <code>app.METHOD(...)</code>: runs for the whole app.</li>
+  <li><strong>Router-level</strong> — <code>router.use(...)</code>: scoped to one <code>express.Router()</code>.</li>
+  <li><strong>Route-level</strong> — handlers passed directly to a route.</li>
+  <li><strong>Error-handling</strong> — the special 4-arg signature; can be app- or router-scoped.</li>
+  <li><strong>Built-in / third-party</strong> — <code>express.json()</code>, <code>helmet</code>, etc. (can throw → caught by error handlers).</li>
+</ul>
+
+<h2>How an error reaches a handler</h2>
+<ul>
+  <li>Throw synchronously in a handler → Express catches it.</li>
+  <li>Call <code>next(err)</code> with any argument → skips straight to the next <em>error</em> handler.</li>
+  <li><strong>Express 4:</strong> rejected promises are NOT auto-caught — wrap async handlers. <strong>Express 5:</strong> they are.</li>
+</ul>
+
+<h2>1. Route-level error (sync throw)</h2>
+<div class="code-wrap"><pre><code>app.get('/sync', (req, res) => {
+  throw new AppError('bad thing', 400);   // Express forwards this to the error handler
+});</code></pre></div>
+
+<h2>2. Route-level async error → next(err) via wrapper</h2>
+<div class="code-wrap"><pre><code>const asyncHandler = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next);   // rejection -> next(err)
+
+app.get('/async', asyncHandler(async (req, res) => {
+  const user = await db.findUser();      // if this rejects, error handler runs
+  if (!user) throw new AppError('not found', 404);
+  res.json(user);
+}));</code></pre></div>
+
+<h2>3. Router-level error handler (scoped)</h2>
+<div class="code-wrap"><pre><code>const users = express.Router();
+users.get('/:id', (req, res) => { throw new AppError('boom', 500); });
+
+// 4-arg handler attached to THIS router only
+users.use((err, req, res, next) => {
+  res.status(err.code || 500).json({ scope: 'users-router', error: err.message });
+});
+app.use('/users', users);</code></pre></div>
+
+<h2>4. 404 catch-all (after all routes)</h2>
+<div class="code-wrap"><pre><code>app.use((req, res) => res.status(404).json({ error: `Not found: ${req.path}` }));</code></pre></div>
+
+<h2>5. Application-level (global) error handler — always LAST</h2>
+<div class="code-wrap"><pre><code>app.use((err, req, res, next) => {
+  console.error(err);                              // full detail server-side
+  const status = err.code || 500;
+  res.status(status).json({
+    error: err.isOperational ? err.message : 'Internal server error'  // sanitize unknowns
+  });
+});</code></pre></div>
+
+<div class="callout warn"><strong>Order matters.</strong> Error handlers must be registered <em>after</em> the routes they protect. A router-level handler catches errors from that router first; anything it re-passes with <code>next(err)</code> bubbles up to the app-level handler.</div>
+
+<div class="callout tip"><strong>Never leak internals:</strong> log the stack server-side, return a sanitized message + status to the client. Map known <code>AppError</code>s to status codes; everything else → generic 500.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How does Express recognize an error handler?</summary><p>By arity — exactly four parameters <code>(err, req, res, next)</code>. Three-arg functions are normal middleware.</p></details>
+  <details><summary>Difference between app-level and router-level handlers?</summary><p>App-level (<code>app.use</code>) applies globally; router-level (<code>router.use</code>) is scoped to that router. A router handler can handle locally or <code>next(err)</code> to bubble up to the global one.</p></details>
+  <details><summary>Are async errors caught automatically?</summary><p>Not in Express 4 — wrap with a helper or try/catch + <code>next(err)</code>. Express 5 forwards rejected promises automatically.</p></details>
+  <details><summary>How do you handle 404s vs thrown errors?</summary><p>A normal middleware after all routes returns 404 for unmatched paths; the 4-arg middleware handles thrown/next(err) errors.</p></details>
+  <details><summary>Where do body-parser / validation errors go?</summary><p>They call <code>next(err)</code> internally, so they land in your error-handling middleware just like route errors.</p></details>
+</div>

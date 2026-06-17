@@ -1,0 +1,35 @@
+<h1>Indexing &amp; Performance <span class="tag db">MongoDB</span></h1>
+<p>Without an index, a query does a <strong>collection scan</strong> (COLLSCAN) — reading every document. Indexes are B-trees that make lookups, sorts, and ranges fast. This is the #1 MongoDB performance topic.</p>
+
+<h2>Index types</h2>
+<ul>
+  <li><strong>Single-field</strong> — <code>{ email: 1 }</code>.</li>
+  <li><strong>Compound</strong> — <code>{ status: 1, createdAt: -1 }</code> (order matters).</li>
+  <li><strong>Multikey</strong> — automatically on array fields.</li>
+  <li><strong>Text</strong>, <strong>Geospatial (2dsphere)</strong>, <strong>Hashed</strong> (sharding), <strong>TTL</strong> (auto-expire docs), <strong>Partial / Sparse</strong>, <strong>Unique</strong>.</li>
+</ul>
+
+<h2>The ESR rule for compound indexes</h2>
+<p>Order fields as <strong>E</strong>quality → <strong>S</strong>ort → <strong>R</strong>ange. A compound index also serves queries on any <strong>left-to-right prefix</strong> of its keys.</p>
+<div class="code-wrap"><pre><code>// index { status: 1, createdAt: -1, amount: 1 } supports:
+//   {status}              ✅ prefix
+//   {status, createdAt}   ✅ prefix
+//   {createdAt}           ❌ not a prefix</code></pre></div>
+
+<h2>Reading <code>.explain()</code></h2>
+<ul>
+  <li><strong>IXSCAN</strong> = index used 🎉; <strong>COLLSCAN</strong> = full scan 🚨.</li>
+  <li>Compare <code>totalDocsExamined</code> vs <code>nReturned</code> — close is good; huge ratio means a bad/missing index.</li>
+  <li><strong>Covered query</strong>: all needed fields are in the index → no document fetch at all.</li>
+</ul>
+
+<div class="callout warn"><strong>Indexes aren't free:</strong> every write must update every index, and they consume RAM. Over-indexing slows writes and wastes memory. Index for real query patterns, then drop unused ones.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>IXSCAN vs COLLSCAN?</summary><p>IXSCAN uses an index (fast); COLLSCAN reads every doc (slow). <code>explain('executionStats')</code> reveals which.</p></details>
+  <details><summary>Explain the ESR rule.</summary><p>In a compound index, put Equality fields first, then the Sort field, then Range fields — maximizes index usage and avoids in-memory sorts.</p></details>
+  <details><summary>What is a covered query?</summary><p>A query answered entirely from the index (projection + filter all indexed), so MongoDB never reads the documents.</p></details>
+  <details><summary>Downside of too many indexes?</summary><p>Slower writes (each index updated), more RAM/storage. Index deliberately for query patterns.</p></details>
+  <details><summary>What's a TTL index for?</summary><p>Auto-expiring documents after a time (sessions, logs, OTPs) via a background deletion task.</p></details>
+</div>

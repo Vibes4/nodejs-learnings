@@ -1,0 +1,29 @@
+<h1>EventEmitter <span class="tag">Node Core</span></h1>
+<p>The <code>events</code> module powers Node's pub/sub backbone. Streams, HTTP servers, sockets — almost every async API in Node is an <code>EventEmitter</code> under the hood.</p>
+
+<h2>Core API</h2>
+<ul>
+  <li><code>emitter.on(event, listener)</code> — subscribe (alias <code>addListener</code>).</li>
+  <li><code>emitter.once(event, listener)</code> — fire at most once.</li>
+  <li><code>emitter.emit(event, ...args)</code> — publish synchronously to all listeners.</li>
+  <li><code>emitter.off(event, listener)</code> — unsubscribe (alias <code>removeListener</code>).</li>
+  <li><code>emitter.removeAllListeners(event)</code>, <code>emitter.listenerCount(event)</code>.</li>
+</ul>
+
+<div class="callout"><strong>Emit is synchronous.</strong> Listeners run in registration order, on the same tick. To defer, wrap with <code>setImmediate</code>.</div>
+
+<h2>The <code>'error'</code> event is special</h2>
+<p>If an EventEmitter emits <code>'error'</code> and there is <strong>no listener</strong>, Node throws and crashes the process. Always attach an error listener to emitters that can fail.</p>
+
+<h2>Memory leak warning</h2>
+<p>Adding more than 10 listeners for one event triggers a <code>MaxListenersExceededWarning</code>. It's usually a bug (you forgot to remove listeners). Tune with <code>emitter.setMaxListeners(n)</code> only when intentional.</p>
+
+<div class="callout tip"><strong>Senior tip:</strong> Prefer <code>once</code> + cleanup, or <code>AbortController</code> / <code>events.once(emitter, evt)</code> (promise-based) to avoid leak-prone manual subscriptions.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Is <code>emit</code> sync or async?</summary><p>Synchronous — all listeners run before <code>emit</code> returns, in the order added.</p></details>
+  <details><summary>What happens if 'error' is emitted with no listener?</summary><p>The error is thrown and the process crashes (uncaught). Always handle 'error'.</p></details>
+  <details><summary>How do you avoid listener memory leaks?</summary><p>Remove listeners when done, use <code>once</code>, use <code>AbortSignal</code>, and watch for the MaxListeners warning.</p></details>
+  <details><summary>How is EventEmitter different from a Promise?</summary><p>Emitter = multiple values over time, many listeners. Promise = single resolution. EventEmitter ≈ observable stream; Promise ≈ one-shot.</p></details>
+</div>

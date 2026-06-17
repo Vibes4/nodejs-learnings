@@ -1,0 +1,1 @@
+<!doctype html><h1>{{title}}</h1><ul>{{#each users}}<li>{{.}}</li>{{/each}}</ul>

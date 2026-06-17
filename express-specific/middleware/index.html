@@ -1,0 +1,33 @@
+<h1>Middleware — the heart of Express <span class="tag express">Express</span></h1>
+<p>A middleware is a function <code>(req, res, next)</code> that runs during the request/response cycle. Express is essentially a <strong>pipeline of middleware</strong>. Mastering this is the #1 Express interview topic.</p>
+
+<h2>The signature</h2>
+<div class="code-wrap"><pre><code>function mw(req, res, next) {
+  // 1. inspect/modify req or res
+  // 2. either end the response (res.send) OR call next()
+  next();           // pass control to the next middleware
+}</code></pre></div>
+<p>Each middleware must <strong>either</strong> send a response <strong>or</strong> call <code>next()</code>. Forgetting both hangs the request forever.</p>
+
+<h2>Types of middleware</h2>
+<ul>
+  <li><strong>Application-level</strong> — <code>app.use(fn)</code> (runs for all routes) or <code>app.use('/api', fn)</code>.</li>
+  <li><strong>Router-level</strong> — bound to an <code>express.Router()</code>.</li>
+  <li><strong>Route-level</strong> — passed directly to a route handler.</li>
+  <li><strong>Built-in</strong> — <code>express.json()</code>, <code>express.urlencoded()</code>, <code>express.static()</code>.</li>
+  <li><strong>Third-party</strong> — <code>cors</code>, <code>helmet</code>, <code>morgan</code>, <code>cookie-parser</code>.</li>
+  <li><strong>Error-handling</strong> — 4 args: <code>(err, req, res, next)</code>.</li>
+</ul>
+
+<h2>Order is everything</h2>
+<p>Middleware runs in the order registered. Body parsers and auth must come <em>before</em> the routes that need them. Error handlers go <em>last</em>.</p>
+
+<div class="callout tip"><strong>Pattern:</strong> Use middleware for cross-cutting concerns — logging, auth, validation, rate limiting, CORS — so route handlers stay focused on business logic.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What are the three arguments of middleware?</summary><p><code>req</code>, <code>res</code>, <code>next</code>. Error middleware has a fourth, <code>err</code>, first: <code>(err, req, res, next)</code>.</p></details>
+  <details><summary>What happens if you don't call next()?</summary><p>The request hangs (no further middleware runs and no response is sent) — unless this middleware already sent a response.</p></details>
+  <details><summary>How does Express know a middleware is an error handler?</summary><p>By its <strong>arity</strong> — it has exactly 4 parameters. That's how Express distinguishes it.</p></details>
+  <details><summary>Where do you put body parsers and auth?</summary><p>Before the routes that depend on them; error handlers go after all routes.</p></details>
+</div>

@@ -1,0 +1,29 @@
+<h1>File System (<code>fs</code>) <span class="tag">Node Core</span></h1>
+<p>The <code>fs</code> module reads/writes files and directories. It offers three flavors of every operation — knowing when to use each is the interview point.</p>
+
+<h2>Three APIs</h2>
+<ul>
+  <li><strong>Synchronous</strong> — <code>fs.readFileSync()</code>. Blocks the event loop. OK at startup / CLI scripts, <strong>never</strong> in a request handler.</li>
+  <li><strong>Callback</strong> — <code>fs.readFile(path, cb)</code>. Classic error-first callbacks.</li>
+  <li><strong>Promise</strong> — <code>require('fs/promises')</code> or <code>fs.promises</code>. Modern, works with <code>async/await</code>. Preferred.</li>
+</ul>
+
+<h2>Common operations</h2>
+<ul>
+  <li>Read/write: <code>readFile</code>, <code>writeFile</code>, <code>appendFile</code>.</li>
+  <li>Metadata: <code>stat</code> / <code>lstat</code> (size, mtime, isDirectory).</li>
+  <li>Dirs: <code>mkdir({recursive:true})</code>, <code>readdir</code>, <code>rm({recursive:true})</code>.</li>
+  <li>Existence: prefer <code>fs.access()</code> or just try the op and catch — avoid <code>existsSync</code> race conditions (TOCTOU).</li>
+  <li>Watching: <code>fs.watch()</code> for change events.</li>
+</ul>
+
+<div class="callout warn"><strong>Big files:</strong> <code>readFile</code> loads the entire file into memory. For large files use <strong>streams</strong> (<code>fs.createReadStream</code>) to process in chunks.</div>
+
+<div class="callout tip"><strong>Always pass an encoding</strong> (e.g. <code>'utf8'</code>) or you get a <code>Buffer</code> back instead of a string.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>When is <code>readFileSync</code> acceptable?</summary><p>At startup (loading config), in build scripts / CLIs — anywhere not on the hot request path. It blocks the single event-loop thread.</p></details>
+  <details><summary>readFile vs createReadStream?</summary><p><code>readFile</code> buffers the whole file in memory; streams process chunk-by-chunk with backpressure — essential for large files and constant memory.</p></details>
+  <details><summary>Why avoid <code>existsSync</code> before reading?</summary><p>Time-of-check-to-time-of-use race: the file can be deleted between the check and the read. Just attempt the operation and handle ENOENT.</p></details>
+</div>

@@ -1,0 +1,37 @@
+<h1>MongoDB + Mongoose <span class="tag db">DB</span></h1>
+<p>MongoDB is a document (NoSQL) database storing BSON documents in collections. <strong>Mongoose</strong> is the dominant Node ODM — adds schemas, validation, middleware, and population on top of the raw driver.</p>
+
+<h2>Core concepts</h2>
+<ul>
+  <li><strong>Document / Collection</strong> ≈ row / table. Flexible schema (but Mongoose enforces one).</li>
+  <li><strong>Schema &amp; Model</strong> — define shape, types, validators, indexes; <code>Model</code> = constructor + query interface.</li>
+  <li><strong>_id</strong> — 12-byte ObjectId (timestamp + machine + counter), monotonic-ish.</li>
+</ul>
+
+<h2>Querying</h2>
+<ul>
+  <li>CRUD: <code>create</code>, <code>find</code>, <code>findById</code>, <code>findByIdAndUpdate</code>, <code>deleteOne</code>.</li>
+  <li>Operators: <code>$gt</code>, <code>$in</code>, <code>$or</code>, <code>$regex</code>, projection, <code>sort/skip/limit</code>.</li>
+  <li><strong>Aggregation pipeline</strong> — <code>$match → $group → $sort → $lookup</code> for analytics/joins.</li>
+  <li><strong>populate</strong> — Mongoose's "join" by reference.</li>
+</ul>
+
+<h2>Performance &amp; correctness (senior topics)</h2>
+<ul>
+  <li><strong>Indexes</strong> — without them queries do COLLSCAN. Create on filtered/sorted fields; understand compound index prefix rules; check with <code>.explain()</code>.</li>
+  <li><strong>Embedding vs referencing</strong> — embed for "contains/read together", reference for large/shared/unbounded relationships.</li>
+  <li><strong>Transactions</strong> — multi-doc ACID requires a replica set; use sessions.</li>
+  <li><strong>Sharding</strong> — horizontal scaling by shard key; choose a high-cardinality, even-distribution key.</li>
+  <li><strong>lean()</strong> — skip hydrating Mongoose docs for read-heavy endpoints (faster, plain objects).</li>
+</ul>
+
+<div class="callout warn"><strong>N+1 in disguise:</strong> looping queries (or naive populate over big arrays) kills performance. Batch with <code>$in</code> / aggregation <code>$lookup</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Embedding vs referencing — how do you decide?</summary><p>Embed when data is accessed together, bounded, and owned by the parent (one-to-few). Reference for one-to-many/many-to-many, large or independently-queried, or shared data.</p></details>
+  <details><summary>How do indexes work and how do you verify usage?</summary><p>B-tree structures speeding lookups/sorts. Use <code>.explain('executionStats')</code> — look for IXSCAN vs COLLSCAN and docs examined vs returned.</p></details>
+  <details><summary>Compound index field order?</summary><p>Follow ESR: Equality, Sort, Range. A compound index supports queries on its left-to-right prefix.</p></details>
+  <details><summary>Does MongoDB support transactions?</summary><p>Yes, multi-document ACID transactions on replica sets/sharded clusters via sessions. Single-document writes are always atomic.</p></details>
+  <details><summary>How do you pick a shard key?</summary><p>High cardinality, even write distribution, aligned with common query filters — to avoid hot shards and scatter-gather queries.</p></details>
+</div>

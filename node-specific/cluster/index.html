@@ -1,0 +1,28 @@
+<h1>Cluster <span class="tag">Node Core</span></h1>
+<p>A single Node process uses one CPU core. The <code>cluster</code> module forks multiple worker processes that <strong>share the same server port</strong>, letting you use all cores for a network server.</p>
+
+<h2>How it works</h2>
+<ul>
+  <li>The <strong>primary</strong> (master) process forks N <strong>workers</strong> (usually one per CPU core).</li>
+  <li>Each worker is a full Node process with its own memory and event loop.</li>
+  <li>The OS / primary load-balances incoming connections across workers (round-robin on most platforms).</li>
+  <li>Workers don't share memory — coordinate via IPC or external stores (Redis).</li>
+</ul>
+
+<h2>Resilience</h2>
+<p>Listen for <code>'exit'</code> on the primary and re-fork dead workers — gives you zero-downtime crash recovery.</p>
+
+<div class="callout"><strong>In practice:</strong> Most teams use a process manager like <strong>PM2</strong> (<code>pm2 start app.js -i max</code>) or run multiple containers behind a load balancer instead of hand-writing cluster code — but you must understand the underlying model.</div>
+
+<h2>cluster vs worker_threads</h2>
+<ul>
+  <li><strong>cluster</strong> — multiple <em>processes</em>, separate memory, scales a <em>network server</em> across cores.</li>
+  <li><strong>worker_threads</strong> — multiple <em>threads</em> in one process, shared memory, for <em>CPU-bound computation</em>.</li>
+</ul>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How do cluster workers share a port?</summary><p>The primary creates the listening socket and distributes connections (or the OS does, with SO_REUSEPORT). Workers accept handed-off connections.</p></details>
+  <details><summary>Do cluster workers share memory?</summary><p>No — separate processes. Share state via Redis, a DB, or IPC messages. Don't keep session state in worker memory.</p></details>
+  <details><summary>cluster vs PM2 vs Kubernetes?</summary><p>Same idea at different layers: cluster = in-app, PM2 = process manager, K8s = container replicas. Pick based on ops maturity; the scaling principle is identical.</p></details>
+</div>

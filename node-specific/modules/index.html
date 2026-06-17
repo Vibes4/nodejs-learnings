@@ -1,0 +1,34 @@
+<h1>Modules: CommonJS vs ESM <span class="tag">Node Core</span></h1>
+<p>Node has two module systems. Knowing the differences cold is a classic senior question.</p>
+
+<h2>CommonJS (CJS) — the original</h2>
+<ul>
+  <li>Load with <code>require()</code>, export with <code>module.exports</code> / <code>exports</code>.</li>
+  <li><strong>Synchronous</strong> loading, resolved at runtime.</li>
+  <li><code>require()</code> can be called conditionally, anywhere.</li>
+  <li>Default for <code>.js</code> files (unless <code>"type":"module"</code> in package.json).</li>
+</ul>
+
+<h2>ES Modules (ESM) — the standard</h2>
+<ul>
+  <li><code>import</code> / <code>export</code>, used by <code>.mjs</code> or with <code>"type":"module"</code>.</li>
+  <li><strong>Asynchronous</strong>, statically analyzed (imports hoisted, must be top-level).</li>
+  <li>Supports top-level <code>await</code> and tree-shaking.</li>
+  <li>No <code>__dirname</code>/<code>require</code> — use <code>import.meta.url</code> and <code>createRequire</code>.</li>
+</ul>
+
+<h2><code>module.exports</code> vs <code>exports</code></h2>
+<p><code>exports</code> is just a reference to <code>module.exports</code>. Reassigning <code>exports = ...</code> breaks the link; only <code>module.exports = ...</code> actually changes what's exported.</p>
+
+<div class="callout warn"><strong>Gotcha:</strong> <code>exports = { foo }</code> exports <em>nothing</em>. Use <code>module.exports = { foo }</code> or <code>exports.foo = ...</code>.</div>
+
+<h2>Module caching</h2>
+<p><code>require()</code> caches modules by resolved path. The module body runs <strong>once</strong>; subsequent requires return the cached <code>module.exports</code>. This makes modules effective singletons — great for DB connections, dangerous for stateful surprises.</p>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>CJS vs ESM in one line each?</summary><p>CJS = synchronous, dynamic, runtime-resolved (<code>require</code>). ESM = async, static, hoisted, standardized (<code>import</code>), enables tree-shaking and top-level await.</p></details>
+  <details><summary>Why are modules singletons?</summary><p>The module cache stores <code>module.exports</code> by resolved path; the file body executes only on first require.</p></details>
+  <details><summary>Can you require an ESM module from CJS?</summary><p>Not with <code>require()</code> directly (older Node). Use dynamic <code>await import()</code>, which works from both systems.</p></details>
+  <details><summary>How does Node resolve <code>require('x')</code>?</summary><p>Core module → relative/absolute path → walk up <code>node_modules</code> folders → check <code>package.json</code> "main"/"exports" → index.js.</p></details>
+</div>
