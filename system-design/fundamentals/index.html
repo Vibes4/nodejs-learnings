@@ -1,0 +1,64 @@
+<h1>System design fundamentals <span class="tag express">System Design</span></h1>
+<p>System design interviews test whether you can take a vague prompt ("design Twitter") and reason about <strong>scale, tradeoffs, and bottlenecks</strong> out loud. There is no single right answer — interviewers grade your structured thinking.</p>
+
+<h2>Scaling: vertical vs horizontal</h2>
+<table>
+  <tr><th>Vertical (scale up)</th><td>Bigger machine (more CPU/RAM). Simple, no code changes. Hard ceiling, single point of failure, expensive at the top end.</td></tr>
+  <tr><th>Horizontal (scale out)</th><td>More machines behind a load balancer. Near-unlimited, fault-tolerant. Needs statelessness, coordination, and a distributed data story.</td></tr>
+</table>
+<p>Real systems do both, but interviews almost always want <strong>horizontal</strong> scaling — say so early.</p>
+
+<h2>Load balancing</h2>
+<p>A load balancer (L4 TCP or L7 HTTP) spreads traffic across a pool. Strategies: <strong>round-robin</strong>, <strong>least-connections</strong>, <strong>consistent hashing</strong> (sticky to a node, minimizes reshuffling when nodes change). It also does health checks and removes dead nodes.</p>
+
+<h2>Statelessness</h2>
+<p>If any server can handle any request, you can add/remove servers freely. Push state out: sessions to <strong>Redis</strong>, files to <strong>object storage</strong>, data to a shared DB. Sticky sessions are a smell — they break clean horizontal scaling.</p>
+
+<h2>CAP theorem</h2>
+<p>In the presence of a network <strong>P</strong>artition, you must choose between <strong>C</strong>onsistency (every read sees the latest write) and <strong>A</strong>vailability (every request gets a non-error response). You cannot have both during a partition.</p>
+<ul>
+  <li><strong>CP</strong> — reject/block until consistent (e.g. a bank ledger, etcd, ZooKeeper).</li>
+  <li><strong>AP</strong> — serve possibly-stale data, reconcile later (e.g. DNS, Cassandra, DynamoDB default).</li>
+</ul>
+<div class="callout warn"><strong>Gotcha:</strong> Partitions are not optional — networks fail. So the real choice is CP vs AP. "CA" only describes a single node with no partitions.</div>
+
+<h2>Consistency models</h2>
+<ul>
+  <li><strong>Strong:</strong> after a write completes, all reads see it. Easier to reason about, costs latency/availability.</li>
+  <li><strong>Eventual:</strong> replicas converge "eventually". Cheap, highly available; clients may read stale data. Fine for likes/feeds, not for balances.</li>
+</ul>
+
+<h2>Latency vs throughput</h2>
+<p><strong>Latency</strong> = time for one request (p50/p95/p99 — quote percentiles, not averages). <strong>Throughput</strong> = requests per second the system sustains. You optimize them differently: batching/queuing raises throughput but can raise latency.</p>
+
+<h2>SQL vs NoSQL</h2>
+<table>
+  <tr><th>SQL (Postgres/MySQL)</th><td>Strong schema, ACID transactions, joins, ad-hoc queries. Default choice. Vertical scaling + read replicas; sharding is manual.</td></tr>
+  <tr><th>NoSQL (Cassandra/Dynamo/Mongo)</th><td>Flexible schema, horizontal scale built-in, high write throughput, eventual consistency. Weak/limited joins & transactions. Choose for huge scale or simple access patterns.</td></tr>
+</table>
+
+<h2>Replication & sharding</h2>
+<ul>
+  <li><strong>Replication</strong> = copies of the same data (leader/follower). Improves read throughput & availability; writes go to the leader.</li>
+  <li><strong>Sharding (partitioning)</strong> = splitting data across nodes by a key (hash or range). Scales writes & storage; introduces cross-shard query pain and hot-shard risk (pick a good shard key).</li>
+</ul>
+
+<h2>A structured interview approach</h2>
+<ol>
+  <li><strong>Requirements</strong> — functional + non-functional (scale, latency, consistency). Clarify before designing.</li>
+  <li><strong>Estimates</strong> — back-of-envelope QPS, storage, bandwidth.</li>
+  <li><strong>API</strong> — define the key endpoints / contracts.</li>
+  <li><strong>Data model</strong> — entities, SQL vs NoSQL, schema.</li>
+  <li><strong>High-level design</strong> — boxes & arrows: LB, services, cache, DB, queue.</li>
+  <li><strong>Scale & bottlenecks</strong> — cache, shard, replicate, async, CDN; discuss failure modes.</li>
+</ol>
+<div class="callout tip"><strong>Senior tip:</strong> Drive the conversation. State assumptions, name the bottleneck before the interviewer does, and always frame choices as tradeoffs ("I'd pick AP here because stale likes are acceptable but downtime isn't").</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Explain CAP and which side you'd pick for a shopping cart.</summary><p>Under a partition you choose consistency or availability. For a cart I lean AP — keep it editable and merge conflicting versions later (Dynamo-style) — but checkout/payment must be CP so you never double-charge.</p></details>
+  <details><summary>Difference between replication and sharding?</summary><p>Replication copies the same dataset for read scaling & HA; writes still hit one leader. Sharding splits different data across nodes to scale writes/storage. They're orthogonal and usually combined.</p></details>
+  <details><summary>Why prefer percentiles over average latency?</summary><p>Averages hide tail latency. A p99 of 2s means 1% of users have a terrible experience even if the mean is 50ms; SLAs are written against p95/p99.</p></details>
+  <details><summary>When would you choose NoSQL over SQL?</summary><p>Massive horizontal write scale, simple key-based access, flexible/evolving schema, and tolerance for eventual consistency. If you need joins, transactions, or ad-hoc queries, start with SQL.</p></details>
+  <details><summary>How do you make a service horizontally scalable?</summary><p>Make it stateless, put it behind a load balancer, externalize session/state to Redis & object storage, and ensure the data layer can replicate/shard. Then adding nodes is free.</p></details>
+</div>

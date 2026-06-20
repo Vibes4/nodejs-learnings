@@ -1,0 +1,33 @@
+<h1>Closures <span class="tag">JavaScript</span></h1>
+<p>A closure is a function bundled together with references to the variables from the scope in which it was created. The function "remembers" that environment even after the outer function has returned.</p>
+
+<h2>Lexical scope</h2>
+<p>JavaScript resolves variable names by where functions are <em>written</em> (lexically), not where they're called. An inner function can always read the bindings of its enclosing functions — that captured chain of scopes is what makes a closure.</p>
+
+<h2>Counter / factory example</h2>
+<p>A factory returns functions that close over private state. Each call to the factory produces an independent environment, so two counters don't interfere.</p>
+
+<h2>Data privacy</h2>
+<p>Before <code>#private</code> class fields, closures were <em>the</em> way to hide state. Variables in the outer scope are unreachable from outside — only the returned functions can touch them. This is the module pattern.</p>
+
+<h2>The classic <code>var</code> + setTimeout bug</h2>
+<p>A loop with <code>var i</code> and an async callback logs the final value of <code>i</code> for every iteration, because all callbacks close over the <em>same</em> binding, which has already advanced by the time they run.</p>
+<div class="callout warn"><strong>Gotcha:</strong> <code>for (var i = 0; i &lt; 3; i++) setTimeout(() =&gt; console.log(i))</code> prints <code>3 3 3</code>, not <code>0 1 2</code>.</div>
+<p>Two fixes:</p>
+<ul>
+  <li><strong><code>let</code></strong> — gives each iteration its own binding (modern, idiomatic).</li>
+  <li><strong>IIFE</strong> — wrap the body in an immediately-invoked function that captures the current value as a parameter (the pre-ES6 technique).</li>
+</ul>
+
+<h2>Memory implications</h2>
+<p>A closure keeps its captured variables alive as long as the closure itself is reachable. That's usually exactly what you want, but holding a long-lived closure (an event listener, a cache entry) over a large object can prevent garbage collection — a subtle leak. Detach listeners and null out references you no longer need.</p>
+<div class="callout tip"><strong>Senior tip:</strong> Closures power memoization, debounce/throttle, currying, and the entire module pattern. If you can explain the counter factory and the loop bug fluently, you understand closures.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Define a closure in one sentence.</summary><p>A function together with the lexical environment (the variables) it was defined in, which it retains access to even after the outer function returns.</p></details>
+  <details><summary>Why does the <code>var</code> + setTimeout loop print the same number?</summary><p>All callbacks share one <code>var</code> binding. By the time the timers fire, the loop has finished and that single variable holds its final value.</p></details>
+  <details><summary>How do you fix it without <code>let</code>?</summary><p>Wrap the iteration in an IIFE that takes <code>i</code> as a parameter, creating a new scope and capturing the current value per iteration.</p></details>
+  <details><summary>How do closures enable data privacy?</summary><p>State declared in the outer function is unreachable from outside; only the returned inner functions can read or mutate it. This is the module pattern.</p></details>
+  <details><summary>Can closures cause memory leaks?</summary><p>Yes — a reachable closure keeps its captured variables alive. Long-lived closures (listeners, caches) over big objects can block GC until you remove the reference.</p></details>
+</div>

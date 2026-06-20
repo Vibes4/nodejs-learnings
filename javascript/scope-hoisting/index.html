@@ -1,0 +1,40 @@
+<h1>Scope &amp; hoisting <span class="tag">JavaScript</span></h1>
+<p>Scope determines where a binding is visible. Hoisting describes how declarations are processed before any code runs. Mixing up <code>var</code>, <code>let</code>, and <code>const</code> behaviour here is a classic interview trap.</p>
+
+<h2>var vs let vs const</h2>
+<table>
+  <tr><th></th><th>var</th><th>let</th><th>const</th></tr>
+  <tr><td>Scope</td><td>function</td><td>block</td><td>block</td></tr>
+  <tr><td>Hoisted</td><td>yes, init <code>undefined</code></td><td>yes, but in TDZ</td><td>yes, but in TDZ</td></tr>
+  <tr><td>Redeclarable</td><td>yes</td><td>no</td><td>no</td></tr>
+  <tr><td>Reassignable</td><td>yes</td><td>yes</td><td>no</td></tr>
+  <tr><td>Creates global prop</td><td>yes (at top level)</td><td>no</td><td>no</td></tr>
+</table>
+<div class="callout"><strong>Note:</strong> <code>const</code> means the <em>binding</em> can't be reassigned — the object it points to is still mutable. <code>const a = []; a.push(1)</code> is fine.</div>
+
+<h2>Function scope vs block scope</h2>
+<p><code>var</code> ignores <code>{ }</code> blocks (if/for/while) — it's scoped to the enclosing function. <code>let</code>/<code>const</code> respect every block. A <code>var</code> declared inside an <code>if</code> leaks to the whole function; a <code>let</code> does not.</p>
+
+<h2>Hoisting</h2>
+<ul>
+  <li><strong>Function declarations</strong> are hoisted entirely — you can call them before they appear in source.</li>
+  <li><strong>var declarations</strong> are hoisted and initialised to <code>undefined</code> (the assignment stays in place).</li>
+  <li><strong>let/const declarations</strong> are hoisted but <em>not</em> initialised — accessing them before the declaration throws.</li>
+  <li><strong>Function expressions / arrow functions</strong> follow their variable's rules (so a <code>const fn = () =&gt; {}</code> is in the TDZ before its line).</li>
+</ul>
+
+<h2>The Temporal Dead Zone (TDZ)</h2>
+<p>The region from the start of a block until a <code>let</code>/<code>const</code> declaration is the TDZ. Reading the variable there throws <code>ReferenceError: Cannot access 'x' before initialization</code> — distinct from the silent <code>undefined</code> you'd get from <code>var</code>. The TDZ exists to make const-before-use a hard error.</p>
+
+<h2>let/const in loops</h2>
+<p>A <code>let</code> in a <code>for</code> header creates a <em>fresh binding per iteration</em>. That's why closures (e.g. <code>setTimeout</code> callbacks) capture the correct value with <code>let</code> but all see the final value with <code>var</code> (a single shared binding).</p>
+<div class="callout tip"><strong>Senior tip:</strong> Default to <code>const</code>, reach for <code>let</code> only when you must reassign, and never use <code>var</code> in new code. This eliminates an entire class of scope and hoisting bugs.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What is the TDZ?</summary><p>The span between entering a scope and the <code>let</code>/<code>const</code> declaration line. Accessing the binding in that span throws a ReferenceError rather than returning <code>undefined</code>.</p></details>
+  <details><summary>Are <code>let</code> and <code>const</code> hoisted?</summary><p>Yes — the engine knows about them at the top of the block — but unlike <code>var</code> they aren't initialised, so they're unusable until their declaration runs (the TDZ).</p></details>
+  <details><summary>Why does <code>let</code> fix the for-loop closure bug?</summary><p>Each iteration gets its own binding, so each closure captures a distinct value. <code>var</code> has one binding shared across all iterations.</p></details>
+  <details><summary>Does <code>const</code> make an object immutable?</summary><p>No. It only prevents reassigning the variable. Use <code>Object.freeze()</code> for a shallow immutable object.</p></details>
+  <details><summary>Difference between a function declaration and expression w.r.t. hoisting?</summary><p>Declarations are fully hoisted and callable before their line. Expressions assigned to a variable follow that variable's hoisting rules (undefined for var, TDZ for let/const).</p></details>
+</div>

@@ -1,0 +1,39 @@
+<h1>Big-O Cheat Sheet <span class="tag db">DSA</span></h1>
+<p>Big-O describes how an algorithm's cost <em>grows</em> as input size <code>n</code> grows. It drops constants and lower-order terms — we care about the shape of the curve, not the exact wall-clock time.</p>
+
+<h2>Complexity table</h2>
+<table>
+  <tr><th>Big-O</th><th>Name</th><th>Example</th></tr>
+  <tr><td><code>O(1)</code></td><td>Constant</td><td>Hash lookup, array index</td></tr>
+  <tr><td><code>O(log n)</code></td><td>Logarithmic</td><td>Binary search</td></tr>
+  <tr><td><code>O(n)</code></td><td>Linear</td><td>Single loop over input</td></tr>
+  <tr><td><code>O(n log n)</code></td><td>Linearithmic</td><td>Merge sort, heap sort</td></tr>
+  <tr><td><code>O(n²)</code></td><td>Quadratic</td><td>Nested loops, naive pair check</td></tr>
+  <tr><td><code>O(2ⁿ)</code></td><td>Exponential</td><td>Backtracking, naive recursion</td></tr>
+</table>
+
+<h2>Time vs space</h2>
+<p><strong>Time</strong> = number of operations. <strong>Space</strong> = extra memory (the auxiliary memory, not the input itself). A HashMap solution to Two Sum trades <code>O(n)</code> space to cut time from <code>O(n²)</code> to <code>O(n)</code> — a classic time/space trade-off.</p>
+
+<h2>Best / average / worst</h2>
+<ul>
+  <li><strong>Worst case</strong> — the guarantee you quote in interviews unless asked otherwise.</li>
+  <li><strong>Average case</strong> — expected over typical inputs (e.g. quicksort is <code>O(n log n)</code> average, <code>O(n²)</code> worst).</li>
+  <li><strong>Best case</strong> — rarely useful (e.g. already-sorted input).</li>
+</ul>
+
+<h2>Amortized analysis</h2>
+<p>A dynamic array <code>push</code> is <code>O(1)</code> <em>amortized</em>: most pushes are <code>O(1)</code>, but occasionally the array doubles and copies all elements (<code>O(n)</code>). Spread across all pushes, the average is still <code>O(1)</code>.</p>
+
+<div class="callout tip"><strong>Pattern:</strong> When you see a nested loop, ask "can a HashMap or sorting collapse this to O(n) or O(n log n)?"</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> <code>O(n + m)</code> with two different inputs is NOT <code>O(2n)</code> = <code>O(n)</code>. Keep distinct variables distinct.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What does Big-O actually measure?</summary><p>The asymptotic growth rate of an algorithm's resource use (time or space) as input size grows, ignoring constants and lower-order terms.</p></details>
+  <details><summary>Difference between average and amortized?</summary><p>Average is a probabilistic claim over inputs. Amortized is a guarantee over a sequence of operations — every sequence of n pushes costs O(n) total, regardless of input distribution.</p></details>
+  <details><summary>Why is binary search O(log n)?</summary><p>Each step halves the search space, so you need log₂(n) steps to reach a single element.</p></details>
+  <details><summary>When is O(n²) acceptable?</summary><p>For small or bounded n (e.g. n &lt; 1000), or when the constant factor and code simplicity outweigh scaling concerns.</p></details>
+  <details><summary>Does dropping constants ever mislead?</summary><p>Yes — for small n a "slower" Big-O can be faster in practice. Big-O describes scaling, not absolute speed.</p></details>
+</div>

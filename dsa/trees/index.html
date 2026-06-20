@@ -1,0 +1,42 @@
+<h1>Trees <span class="tag db">DSA</span></h1>
+<p>A tree is a hierarchy of nodes with one root and no cycles. The binary tree (≤2 children) dominates interviews. Master the traversals and most tree problems become a one-line recursion.</p>
+
+<h2>Traversals</h2>
+<ul>
+  <li><strong>DFS</strong> (depth-first, via recursion/stack):
+    <ul>
+      <li><strong>Preorder</strong> — node, left, right. (copy/serialize a tree)</li>
+      <li><strong>Inorder</strong> — left, node, right. (sorted output for a BST)</li>
+      <li><strong>Postorder</strong> — left, right, node. (delete/free, compute sizes)</li>
+    </ul>
+  </li>
+  <li><strong>BFS</strong> (breadth-first / level-order, via a queue) — process level by level.</li>
+</ul>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Traversal (any)</td><td><code>O(n)</code></td></tr>
+  <tr><td>BST search / insert (balanced)</td><td><code>O(log n)</code></td></tr>
+  <tr><td>BST search (degenerate / skewed)</td><td><code>O(n)</code></td></tr>
+</table>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Maximum Depth</strong> — <code>1 + max(depth(left), depth(right))</code>.</li>
+  <li><strong>Level Order Traversal</strong> — BFS, grouping each level.</li>
+  <li><strong>Validate BST</strong> — inorder must be strictly increasing (or pass down min/max bounds).</li>
+  <li><strong>Lowest Common Ancestor</strong> — recurse; the split point where targets diverge.</li>
+</ul>
+
+<div class="callout tip"><strong>Pattern:</strong> Inorder traversal of a Binary Search Tree yields values in sorted order — that's the trick behind Validate BST and kth-smallest.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> Validate BST is not "left.val &lt; node.val &lt; right.val" locally — every node in the left subtree must be less than the node, so pass down (min, max) bounds.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>When use inorder vs preorder vs postorder?</summary><p>Inorder → sorted output for a BST. Preorder → serialize/copy (root first). Postorder → free/aggregate children before the parent.</p></details>
+  <details><summary>DFS vs BFS on a tree?</summary><p>DFS (recursion/stack) explores a branch fully before backtracking — natural for depth, paths, subtree aggregates. BFS (queue) explores level by level — natural for shortest depth and level grouping.</p></details>
+  <details><summary>How do you validate a BST correctly?</summary><p>Recurse passing down allowed (low, high) bounds, tightening them as you descend; or check that an inorder traversal is strictly increasing.</p></details>
+  <details><summary>Why can a BST degrade to O(n)?</summary><p>Inserting sorted data makes a skewed, list-like tree. Self-balancing trees (AVL, red-black) keep height O(log n).</p></details>
+</div>

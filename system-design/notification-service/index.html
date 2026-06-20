@@ -1,0 +1,42 @@
+<h1>Notification service <span class="tag express">System Design</span></h1>
+<p>A shared service that delivers messages to users across channels — push, email, SMS — reliably and at scale, so every other team doesn't reinvent it.</p>
+
+<h2>Channels</h2>
+<ul>
+  <li><strong>Push</strong> — APNs (iOS) / FCM (Android/web). Best for timely, app-context alerts.</li>
+  <li><strong>Email</strong> — via SES/SendGrid. Rich content, durable, deliverability concerns (SPF/DKIM).</li>
+  <li><strong>SMS</strong> — via Twilio etc. High open-rate, costly, for critical/OTP messages.</li>
+</ul>
+
+<h2>Architecture: decouple via a queue</h2>
+<p>Producers (any service) drop a notification request onto a <strong>message queue</strong>. Workers consume, render, and dispatch to per-channel adapters. This absorbs spikes, isolates slow third-party providers, and lets you retry independently.</p>
+<p>Flow: <em>API → queue → workers → channel adapters (push/email/SMS) → provider</em>.</p>
+
+<h2>Templating</h2>
+<p>Store reusable templates with placeholders (<code>Hi {{name}}, your order {{id}} shipped</code>). Producers send a template id + data, not raw text — enabling localization, versioning, and consistency.</p>
+
+<h2>User preferences / opt-out</h2>
+<p>Check a preferences service before sending: per-channel opt-in/out, quiet hours, frequency caps, and legal unsubscribe (CAN-SPAM). Respecting opt-out is mandatory, not optional.</p>
+
+<h2>Retries with backoff</h2>
+<p>Providers fail transiently. Retry with <strong>exponential backoff + jitter</strong>, cap attempts, then dead-letter. Distinguish retryable (5xx, timeout, rate-limited) from permanent (invalid token, hard bounce) errors — don't retry the latter.</p>
+
+<h2>Idempotency &amp; dedupe</h2>
+<p>At-least-once delivery means a notification can be enqueued twice. Attach an idempotency/dedupe key (e.g. <code>userId + eventId</code>); a worker that's already sent that key skips the duplicate. Critical so users don't get the same SMS five times.</p>
+<div class="callout warn"><strong>Gotcha:</strong> Without a dedupe key, a retried or re-delivered queue message sends duplicate notifications — annoying for push, expensive for SMS.</div>
+
+<h2>Rate limiting per user</h2>
+<p>Cap how many notifications a single user receives (e.g. N/hour) to prevent spamming them during an incident or a buggy producer loop. Often combined with batching/digesting low-priority alerts.</p>
+
+<h2>Fan-out at scale</h2>
+<p>A "breaking news" event to millions of users fans out into millions of individual sends. Spread them across many workers and shard by user, throttle to respect provider quotas, and prioritize transactional (OTP) over marketing traffic on separate queues.</p>
+<div class="callout tip"><strong>Senior tip:</strong> Use separate priority queues for transactional vs marketing. An OTP must never sit behind a million-message marketing blast.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why front the service with a queue?</summary><p>It decouples producers from slow/unreliable third-party providers, absorbs spikes, and enables independent retries and prioritization. The producing service responds immediately while delivery happens reliably in the background.</p></details>
+  <details><summary>How do you avoid sending duplicate notifications?</summary><p>Attach an idempotency/dedupe key like userId+eventId. Workers record sent keys (Redis/DB) and skip any already-sent key, making at-least-once delivery effectively exactly-once for the user.</p></details>
+  <details><summary>How do you handle provider failures?</summary><p>Retry retryable errors with exponential backoff + jitter, cap attempts, then dead-letter. Treat permanent errors (invalid token, hard bounce) as non-retryable and surface them for cleanup.</p></details>
+  <details><summary>How do you respect user preferences?</summary><p>Check a preferences/opt-out service before dispatch: per-channel consent, quiet hours, frequency caps, and unsubscribe. Skip or reroute when a channel is opted out.</p></details>
+  <details><summary>How do you keep OTPs fast during a marketing blast?</summary><p>Separate priority queues and worker pools so transactional traffic never queues behind bulk marketing, plus per-provider throttling and sharding for the fan-out.</p></details>
+</div>

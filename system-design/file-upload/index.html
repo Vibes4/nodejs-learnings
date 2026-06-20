@@ -1,0 +1,40 @@
+<h1>File upload service <span class="tag express">System Design</span></h1>
+<p>Design a service for uploading and serving files (images, videos, documents) — the kind backing S3-style storage, photo apps, or document platforms.</p>
+
+<h2>Direct vs presigned-URL upload</h2>
+<table>
+  <tr><th>Direct (through your server)</th><td>Client POSTs to your API, which streams to object storage. Simple, but your servers carry all the bandwidth — a scaling bottleneck.</td></tr>
+  <tr><th>Presigned URL</th><td>Client asks your API for a short-lived signed URL, then uploads <strong>directly to object storage (S3)</strong>. Offloads bandwidth from your servers; your API only handles metadata. The standard at scale.</td></tr>
+</table>
+<div class="callout tip"><strong>Senior tip:</strong> Always reach for presigned URLs. Your app servers should handle metadata and authorization, not gigabytes of file bytes.</div>
+
+<h2>Large files: multipart / chunked upload</h2>
+<p>Split big files into chunks (e.g. 5–10 MB) uploaded independently, then assembled. Benefits:</p>
+<ul>
+  <li><strong>Parallelism</strong> — upload chunks concurrently for speed.</li>
+  <li><strong>Resumability</strong> — a dropped connection only re-sends the failed chunk, not the whole file.</li>
+  <li><strong>Reliability</strong> — each chunk is acked; the server tracks which are received and reassembles when complete.</li>
+</ul>
+
+<h2>Validation &amp; virus scanning</h2>
+<p>Validate type/size <em>server-side</em> (don't trust the client's content-type or extension — check magic bytes). Quarantine uploads, run async <strong>virus/malware scanning</strong>, and only mark a file "available" after it passes. Never serve unscanned user content from a trusted domain.</p>
+<div class="callout warn"><strong>Gotcha:</strong> Client-side validation is for UX only. A determined client bypasses it — re-validate size, type, and content on the server.</div>
+
+<h2>CDN for downloads</h2>
+<p>Serve reads through a <strong>CDN</strong> (CloudFront) so files are cached at edge locations near users — lower latency, less origin load. Use signed CDN URLs / tokens for access control on private files.</p>
+
+<h2>Metadata DB</h2>
+<p>Object storage holds the bytes; a database holds the <strong>metadata</strong>: file id, owner, name, size, content type, content hash, storage key, status (uploading/scanning/available), timestamps. This is what you query and authorize against.</p>
+
+<h2>Deduplication by content hash</h2>
+<p>Hash the content (SHA-256). If the hash already exists in storage, skip the upload and just point a new metadata row at the existing object — saving storage and bandwidth. This also enables integrity checks and resumable-chunk verification.</p>
+<div class="callout warn"><strong>Gotcha:</strong> Content-hash dedupe means deleting a file must be reference-counted — don't delete the underlying object while another row still references the same hash.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why presigned URLs instead of uploading through your API?</summary><p>They let the client upload bytes straight to object storage, so your app servers don't become a bandwidth bottleneck. Your API only issues short-lived signed URLs and records metadata.</p></details>
+  <details><summary>How do you support huge files and resumability?</summary><p>Multipart/chunked upload: split into chunks uploaded independently and in parallel, ack each, and reassemble. A failure re-sends only the missing chunk, not the whole file.</p></details>
+  <details><summary>How does content-hash dedupe work, and what's the catch?</summary><p>Hash the content (SHA-256); if it already exists, point a new metadata row at the existing object instead of re-storing. The catch: deletes must be reference-counted so you don't drop an object another row still uses.</p></details>
+  <details><summary>How do you handle malicious uploads?</summary><p>Validate type/size server-side via magic bytes, quarantine the file, scan asynchronously for malware, and only flip status to "available" after it passes. Serve via signed URLs from a separate domain.</p></details>
+  <details><summary>How do you scale downloads?</summary><p>Put a CDN in front of object storage to cache files at the edge, cutting latency and origin load; use signed CDN URLs for access control on private content.</p></details>
+</div>

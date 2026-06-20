@@ -1,0 +1,38 @@
+<h1>HashMap / HashSet <span class="tag db">DSA</span></h1>
+<div class="callout"><strong>Note:</strong> This is the single most important topic in coding interviews. A huge fraction of array/string problems collapse from <code>O(n²)</code> to <code>O(n)</code> the moment you introduce a hash map.</div>
+
+<p>A HashMap stores key→value with <code>O(1)</code> average access by hashing the key to a bucket. A HashSet is the same idea for membership only. In JS: <code>Map</code> and <code>Set</code> (or plain objects for string/number keys).</p>
+
+<h2>When to reach for it</h2>
+<ul>
+  <li><strong>Frequency counting</strong> — how many times each item appears.</li>
+  <li><strong>Fast lookup</strong> — "have I seen X?" in <code>O(1)</code>.</li>
+  <li><strong>Duplicate detection</strong> — Set membership while iterating.</li>
+  <li><strong>Complement / pairing</strong> — store what you need, check on arrival (Two Sum).</li>
+</ul>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Operation</th><th>Average</th><th>Worst</th></tr>
+  <tr><td>Get</td><td><code>O(1)</code></td><td><code>O(n)</code> (collisions)</td></tr>
+  <tr><td>Put / set</td><td><code>O(1)</code></td><td><code>O(n)</code></td></tr>
+  <tr><td>Has / delete</td><td><code>O(1)</code></td><td><code>O(n)</code></td></tr>
+</table>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Two Sum</strong> — complement lookup.</li>
+  <li><strong>Contains Duplicate</strong> — Set membership in one pass.</li>
+  <li><strong>Valid Anagram</strong> — character frequency map.</li>
+  <li><strong>Frequency Counter</strong> — most common element, group by count.</li>
+</ul>
+
+<div class="callout warn"><strong>Gotcha:</strong> Use <code>Map</code>, not a plain object, when keys aren't strings/numbers, when you need insertion order guaranteed, or when keys might collide with prototype names like <code>"constructor"</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>When do you reach for a HashMap?</summary><p>Frequency counting, O(1) membership/lookup, duplicate detection, and complement/pairing problems — anytime you'd otherwise nest a loop to "find a match."</p></details>
+  <details><summary>Map vs plain object in JS?</summary><p>Map allows any key type, preserves insertion order, has a <code>.size</code>, and avoids prototype-key collisions. Objects are fine for simple string-keyed counters and are slightly faster for that case.</p></details>
+  <details><summary>Why is average O(1) but worst O(n)?</summary><p>Hashing spreads keys across buckets for O(1) average; pathological collisions (or a bad hash) put everything in one bucket, degrading to a linear scan.</p></details>
+  <details><summary>Set vs Map — when?</summary><p>Set when you only care about presence (dedupe, "seen"); Map when you need an associated value (index, count, node).</p></details>
+</div>

@@ -1,0 +1,40 @@
+<h1>Array &amp; object methods <span class="tag">JavaScript</span></h1>
+<p>Fluency with the functional array methods and modern object utilities is expected in every coding interview. They make code declarative, and most are non-mutating — key for immutability.</p>
+
+<h2>map / filter / reduce</h2>
+<ul>
+  <li><strong><code>map</code></strong> — transform each element 1:1, returns a new array of the same length.</li>
+  <li><strong><code>filter</code></strong> — keep elements passing a predicate, returns a (possibly shorter) new array.</li>
+  <li><strong><code>reduce</code></strong> — fold the array into a single accumulated value. Always pass an initial value.</li>
+</ul>
+<div class="callout warn"><strong>Gotcha:</strong> <code>reduce</code> without an initial value uses the first element as the seed and throws on an empty array. Pass the initial value (<code>0</code>, <code>[]</code>, <code>{}</code>) to be safe.</div>
+
+<h2>find / some / every</h2>
+<ul>
+  <li><strong><code>find</code></strong> — first matching element (or <code>undefined</code>); <code>findIndex</code> for its index.</li>
+  <li><strong><code>some</code></strong> — true if <em>any</em> element passes (short-circuits).</li>
+  <li><strong><code>every</code></strong> — true if <em>all</em> elements pass (short-circuits). <code>every</code> on an empty array is <code>true</code>.</li>
+</ul>
+
+<h2>Spread &amp; rest</h2>
+<p>Same <code>...</code> syntax, opposite jobs. <strong>Spread</strong> expands an iterable into elements/properties (<code>[...arr]</code>, <code>{...obj}</code>, <code>fn(...args)</code>). <strong>Rest</strong> collects the remainder into an array (<code>function f(...args)</code>, <code>const [first, ...rest] = arr</code>).</p>
+<div class="callout"><strong>Note:</strong> Spread makes a <em>shallow</em> copy — nested objects are still shared by reference.</div>
+
+<h2>Destructuring</h2>
+<p>Pull values out of arrays/objects by position or key, with defaults and renaming: <code>const { id, name: n = 'anon' } = user</code>, <code>const [a, b] = pair</code>.</p>
+
+<h2>Object.keys / values / entries</h2>
+<p>Iterate objects: <code>Object.keys(o)</code>, <code>Object.values(o)</code>, <code>Object.entries(o)</code> (array of <code>[key, value]</code> pairs). <code>Object.fromEntries</code> rebuilds an object — handy for transforming maps.</p>
+
+<h2>Immutability patterns</h2>
+<p>Produce new values instead of mutating: <code>[...arr, x]</code> to append, <code>arr.filter(...)</code> to remove, <code>{...obj, key: v}</code> to update a field, <code>arr.map(...)</code> to update items. This is the bedrock of React state and Redux reducers.</p>
+<div class="callout tip"><strong>Senior tip:</strong> Know which methods mutate. <code>push/pop/splice/sort/reverse</code> mutate in place; <code>map/filter/slice/concat/toSorted</code> return new arrays. In immutable code, copy before sorting: <code>[...arr].sort()</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Implement <code>map</code> with <code>reduce</code>.</summary><p><code>arr.reduce((acc, x) =&gt; [...acc, fn(x)], [])</code> — though pushing into the accumulator is more efficient than spreading each step.</p></details>
+  <details><summary>Difference between <code>find</code> and <code>filter</code>?</summary><p><code>find</code> returns the first matching element and stops; <code>filter</code> returns all matches as a new array.</p></details>
+  <details><summary>Is spread a deep copy?</summary><p>No, it's shallow — top-level values are copied, but nested objects/arrays remain shared references.</p></details>
+  <details><summary>Which array methods mutate?</summary><p><code>push, pop, shift, unshift, splice, sort, reverse, fill</code>. The non-mutating counterparts include <code>map, filter, slice, concat, toSorted, toReversed</code>.</p></details>
+  <details><summary>How do you update one field immutably?</summary><p>Spread and override: <code>{ ...obj, field: newValue }</code>. For arrays of items, <code>map</code> and replace the target.</p></details>
+</div>

@@ -1,0 +1,48 @@
+<h1>Message queues <span class="tag express">System Design</span></h1>
+<p>A message queue lets services communicate <strong>asynchronously</strong>: a producer drops a message and moves on; a consumer processes it later. This decouples components in time, scale, and failure.</p>
+
+<h2>Why async / decoupling?</h2>
+<ul>
+  <li><strong>Decoupling</strong> — producer doesn't need the consumer to be up or fast.</li>
+  <li><strong>Load leveling</strong> — the queue absorbs bursts; consumers drain at their own pace.</li>
+  <li><strong>Resilience</strong> — if a consumer crashes, messages wait instead of being lost.</li>
+  <li><strong>Fan-out</strong> — one event, many independent consumers.</li>
+</ul>
+<p>Classic example: on checkout, enqueue "send receipt email" rather than blocking the HTTP response on the email provider.</p>
+
+<h2>Kafka vs RabbitMQ</h2>
+<table>
+  <tr><th></th><th>Kafka</th><th>RabbitMQ</th></tr>
+  <tr><th>Model</th><td>Distributed commit <strong>log</strong>; messages persist and are replayable.</td><td>Smart broker; messages typically removed after ack.</td></tr>
+  <tr><th>Scaling</th><td><strong>Partitions</strong> + <strong>consumer groups</strong>; ordering per partition.</td><td>Queues + exchanges; routing via bindings.</td></tr>
+  <tr><th>Strength</th><td>Very high throughput, event streaming, replay/reprocessing.</td><td>Flexible routing (topic/fanout/direct), per-message acks, priorities.</td></tr>
+  <tr><th>Use when</th><td>Event sourcing, analytics pipelines, log aggregation, huge fan-out.</td><td>Task queues, complex routing, RPC-style work distribution.</td></tr>
+</table>
+<p>Kafka <strong>consumer groups</strong>: each partition is read by exactly one consumer in a group, so adding consumers (up to the partition count) scales throughput while preserving per-partition order.</p>
+
+<h2>Delivery guarantees</h2>
+<ul>
+  <li><strong>At-most-once</strong> — fire and forget; may lose messages. Rare.</li>
+  <li><strong>At-least-once</strong> — retried until acked; may <em>duplicate</em>. The common default.</li>
+  <li><strong>Exactly-once</strong> — no loss, no dupes. Expensive and limited; usually faked with at-least-once + idempotent consumers.</li>
+</ul>
+
+<h2>Idempotency</h2>
+<p>Because at-least-once means duplicates, consumers must be <strong>idempotent</strong>: processing the same message twice has the same effect as once. Use a dedupe key (message id) stored in a DB/Redis set, or design naturally idempotent operations (<code>SET balance = X</code> not <code>balance += X</code>).</p>
+<div class="callout warn"><strong>Gotcha:</strong> "Exactly-once delivery" is largely a myth across a network — aim for <em>exactly-once processing</em> via idempotency and dedupe.</div>
+
+<h2>Dead-letter queues (DLQ)</h2>
+<p>A message that fails after N retries is moved to a DLQ instead of blocking the queue forever ("poison message"). The DLQ is inspected, alarmed on, and replayed after a fix.</p>
+
+<h2>Backpressure</h2>
+<p>When producers outpace consumers, the queue grows. Handle it with: bounded queues that reject/throttle producers, autoscaling consumers off queue depth, and monitoring <strong>consumer lag</strong> (Kafka) as a key health metric.</p>
+<div class="callout tip"><strong>Senior tip:</strong> Always pair retries with backoff + a DLQ, and make the consumer idempotent. Without those three, a single bad message or downstream blip can take down the whole pipeline.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Kafka vs RabbitMQ — how do you choose?</summary><p>Kafka for high-throughput event streams you may replay or fan out to many consumers (analytics, event sourcing). RabbitMQ for task queues with complex routing and per-message acks. Kafka = durable log; Rabbit = smart broker.</p></details>
+  <details><summary>How do you achieve exactly-once?</summary><p>You usually don't — you use at-least-once delivery plus idempotent consumers (dedupe on message id, or idempotent operations). True exactly-once needs transactional coordination and is limited in scope.</p></details>
+  <details><summary>What's a dead-letter queue for?</summary><p>To isolate messages that repeatedly fail so they don't block the main queue. You alert on it, inspect the cause, fix, and replay — instead of infinitely retrying a poison message.</p></details>
+  <details><summary>How do you handle a slow consumer / backpressure?</summary><p>Monitor consumer lag, autoscale consumers off queue depth, bound the queue so producers throttle, and shed or batch load. The queue itself buffers short bursts.</p></details>
+  <details><summary>Why use a queue instead of a synchronous call?</summary><p>It decouples availability and scale: the producer responds immediately and the work happens reliably in the background, surviving consumer downtime and traffic spikes.</p></details>
+</div>

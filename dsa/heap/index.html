@@ -1,0 +1,39 @@
+<h1>Heap / Priority Queue <span class="tag db">DSA</span></h1>
+<p>A binary heap is a complete tree (stored in an array) where every parent beats its children — a <strong>min-heap</strong> keeps the smallest at the root, a <strong>max-heap</strong> the largest. It's the implementation behind a priority queue: always pop the "best" element next.</p>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Peek (min/max)</td><td><code>O(1)</code></td></tr>
+  <tr><td>Insert (push)</td><td><code>O(log n)</code></td></tr>
+  <tr><td>Extract (pop)</td><td><code>O(log n)</code></td></tr>
+  <tr><td>Build heap from array</td><td><code>O(n)</code></td></tr>
+</table>
+
+<h2>Use it for</h2>
+<ul>
+  <li><strong>Top-K problems</strong> — keep a heap of size k; <code>O(n log k)</code> instead of sorting everything.</li>
+  <li><strong>Scheduling</strong> — always run the highest-priority / earliest task next (Dijkstra, task queues).</li>
+  <li><strong>Streaming data</strong> — running median (two heaps), kth largest in a stream.</li>
+</ul>
+
+<h2>Array layout</h2>
+<p>For a node at index <code>i</code>: parent is <code>(i-1)/2</code>, children are <code>2i+1</code> and <code>2i+2</code>. Insert appends then "bubbles up"; pop swaps root with the last element then "sinks down".</p>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>K Largest Elements</strong> — min-heap of size k.</li>
+  <li><strong>Top K Frequent Elements</strong> — count with a map, then heap (or bucket sort) by frequency.</li>
+</ul>
+
+<div class="callout tip"><strong>Pattern:</strong> "top K" or "K largest/smallest/most-frequent" → maintain a heap of size K. For the K <em>largest</em>, use a <em>min</em>-heap so the smallest of your K is cheap to evict.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> A heap is only partially ordered — it gives you the extreme element in O(1), but it does NOT give a fully sorted list without repeatedly popping (which is heap sort, O(n log n)).</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why a min-heap for K largest?</summary><p>Keep exactly K elements; the root is the smallest of them. For each new value, if it beats the root, pop the root and push it. The heap ends holding the K largest, in O(n log k).</p></details>
+  <details><summary>Heap vs sorting for top-K?</summary><p>Sorting is O(n log n); a size-K heap is O(n log k). When k ≪ n, the heap wins and uses less memory.</p></details>
+  <details><summary>How is a heap stored?</summary><p>As a flat array; parent/child indices are computed arithmetically — no pointers needed.</p></details>
+  <details><summary>How do you get a running median?</summary><p>Two heaps: a max-heap for the lower half and a min-heap for the upper half, kept balanced. The median is the root(s).</p></details>
+</div>

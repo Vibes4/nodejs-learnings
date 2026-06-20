@@ -1,0 +1,38 @@
+<h1>Linked List <span class="tag db">DSA</span></h1>
+<p>A linked list is a chain of nodes, each holding a value and a pointer to the next. No random access, but <code>O(1)</code> insert/delete once you hold the node. Interviews lean on two pointer tricks.</p>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Access by index</td><td><code>O(n)</code></td></tr>
+  <tr><td>Insert / delete at head</td><td><code>O(1)</code></td></tr>
+  <tr><td>Insert / delete given node</td><td><code>O(1)</code></td></tr>
+  <tr><td>Search</td><td><code>O(n)</code></td></tr>
+</table>
+
+<h2>Patterns</h2>
+<ul>
+  <li><strong>Fast &amp; Slow Pointers (Floyd's)</strong> — cycle detection, finding the middle, nth-from-end.</li>
+  <li><strong>Reverse In Place</strong> — three pointers (prev, curr, next) walk and flip links.</li>
+  <li><strong>Dummy Head</strong> — sentinel node simplifies edge cases when building/merging.</li>
+</ul>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Reverse Linked List</strong> — iterative prev/curr/next, <code>O(n)</code>.</li>
+  <li><strong>Detect Cycle</strong> — fast moves 2, slow moves 1; they meet inside a cycle.</li>
+  <li><strong>Middle Node</strong> — when fast reaches the end, slow is at the middle.</li>
+  <li><strong>Merge Two Sorted Lists</strong> — dummy head + splice smaller node each step.</li>
+</ul>
+
+<div class="callout tip"><strong>Pattern:</strong> Two pointers at different speeds solve "find the middle", "detect a cycle", and "nth from end" — all in one pass, O(1) space.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> When reversing, save <code>next</code> <em>before</em> you overwrite <code>curr.next</code>, or you lose the rest of the list.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How does Floyd's cycle detection work?</summary><p>A slow pointer (+1) and fast pointer (+2) advance together. If there's a cycle, fast laps slow and they meet; if fast hits null, there's no cycle. O(n) time, O(1) space.</p></details>
+  <details><summary>Reverse a linked list iteratively?</summary><p>Walk with prev=null, curr=head; each step: save next, point curr.next to prev, advance prev and curr. Return prev as the new head.</p></details>
+  <details><summary>Find the middle in one pass?</summary><p>Fast/slow pointers: when fast reaches the end, slow is at the middle.</p></details>
+  <details><summary>Linked list vs array — when?</summary><p>Linked list for frequent insert/delete at known positions and unknown size; array for random access and cache-friendly iteration.</p></details>
+</div>

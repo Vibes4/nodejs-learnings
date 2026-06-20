@@ -1,0 +1,47 @@
+<h1>URL shortener <span class="tag express">System Design</span></h1>
+<p>Design a service that turns <code>https://example.com/very/long/path</code> into <code>https://sho.rt/aZ4k9</code> and redirects on lookup. A classic interview because it surfaces hashing, encoding, read-heavy scaling, and caching.</p>
+
+<h2>Requirements</h2>
+<ul>
+  <li><strong>Functional:</strong> create a short URL for a long one; redirect short → long; optional custom alias; optional expiry; basic analytics (click counts).</li>
+  <li><strong>Non-functional:</strong> very low-latency redirects, extremely <strong>read-heavy</strong> (~100:1), highly available, short keys.</li>
+</ul>
+
+<h2>Estimating key length (base62)</h2>
+<p>Use <strong>base62</strong> = <code>[0-9a-zA-Z]</code> = 62 symbols. A length-7 key gives 62⁷ ≈ <strong>3.5 trillion</strong> combinations — plenty. Base62 is URL-safe and compact (shorter than hex or base10 ids).</p>
+
+<h2>Generating short keys</h2>
+<table>
+  <tr><th>Counter + base62</th><td>Maintain a global auto-increment id, encode it to base62. <em>No collisions ever</em>, keys are short and sequential. Need a distributed counter (e.g. range allocation / ticket server).</td></tr>
+  <tr><th>Hash (MD5/SHA) + truncate</th><td>Hash the long URL, take first N chars. Same URL → same key (free dedupe). But truncation causes <strong>collisions</strong> — must check &amp; retry.</td></tr>
+  <tr><th>Key Generation Service (KGS)</th><td>A standalone service pre-generates random unique keys into a "available" pool; servers grab keys in batches. Decouples generation from write path, no collisions at request time.</td></tr>
+</table>
+
+<h2>Collision handling</h2>
+<p>For hash-based keys: on insert, rely on a unique constraint; on conflict, append a salt / re-hash and retry. Counter and KGS approaches avoid collisions by construction.</p>
+
+<h2>Read-heavy: cache aggressively</h2>
+<p>Redirects vastly outnumber creations. Put a <strong>cache (Redis) + CDN</strong> in front of the lookup; the hot set of popular links lives in memory. The DB only sees misses and writes.</p>
+
+<h2>Data model</h2>
+<p>A simple key-value table works: <code>short_key (PK)</code>, <code>long_url</code>, <code>created_at</code>, <code>expires_at</code>, <code>click_count</code>. Sharded by <code>short_key</code> hash at scale. NoSQL/KV stores fit well given the access pattern.</p>
+
+<h2>Redirect: 301 vs 302</h2>
+<ul>
+  <li><strong>301 (permanent):</strong> browsers cache it, so subsequent clicks skip your server — great for load, <em>but you lose click analytics</em> and can't change the target.</li>
+  <li><strong>302 (temporary):</strong> not cached; every click hits your server, enabling analytics and updatable targets. Usually the right choice for a shortener.</li>
+</ul>
+<div class="callout warn"><strong>Gotcha:</strong> Choosing 301 silently kills your analytics because the browser stops asking your server. Most shorteners use 302 deliberately.</div>
+
+<h2>Analytics</h2>
+<p>Don't update the DB synchronously on every click — that adds write load to the hot redirect path. Fire an async event (queue/log) and aggregate click counts, geo, and referrers offline.</p>
+<div class="callout tip"><strong>Senior tip:</strong> Counter+base62 with a ticket/range allocator gives the shortest keys and zero collisions; reach for hashing only if you specifically want identical-URL dedupe.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How do you generate short, unique keys?</summary><p>Best: a global auto-increment id encoded to base62 — short, collision-free. Alternatives: hash-and-truncate (needs collision retries, gives dedupe) or a Key Generation Service that pre-mints unique keys into a pool.</p></details>
+  <details><summary>Why base62 and what length?</summary><p>Base62 is URL-safe and compact. Length 7 yields 62⁷ ≈ 3.5 trillion keys, enough for years of growth while staying short.</p></details>
+  <details><summary>301 or 302 redirect?</summary><p>302. A 301 is cached by browsers so clicks bypass your server, killing analytics and the ability to change the target. 302 keeps every click flowing through you.</p></details>
+  <details><summary>How do you scale the read path?</summary><p>It's ~100:1 read-heavy, so cache aggressively: Redis for hot keys plus a CDN; the DB handles only misses and writes. Shard the store by short_key.</p></details>
+  <details><summary>How do you generate unique ids across many servers?</summary><p>Hand each server a contiguous id range from a central allocator (or use Snowflake-style ids) so they never coordinate per request yet never collide.</p></details>
+</div>

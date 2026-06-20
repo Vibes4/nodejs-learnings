@@ -1,0 +1,61 @@
+<h1>Caching &amp; Redis <span class="tag express">System Design</span></h1>
+<p>A cache stores expensive-to-compute or slow-to-fetch data in fast memory close to the consumer. It's the single highest-leverage tool for read-heavy systems — but cache <em>correctness</em> is genuinely hard.</p>
+
+<h2>Why cache?</h2>
+<ul>
+  <li>Cut latency (RAM in microseconds vs disk/DB in milliseconds).</li>
+  <li>Reduce load on the database so it can scale.</li>
+  <li>Smooth out spikes and absorb read bursts.</li>
+</ul>
+<p>Caches live at many layers: browser, CDN, reverse proxy, application (Redis/Memcached), and inside the DB itself.</p>
+
+<h2>Caching patterns</h2>
+<table>
+  <tr><th>Cache-aside (lazy)</th><td>App checks cache; on miss, reads DB and populates cache. Most common. Cache only holds requested data. Risk: first request is slow; stale data until TTL.</td></tr>
+  <tr><th>Read-through</th><td>App talks only to the cache; the cache library loads from DB on miss. Cleaner app code; needs cache that supports it.</td></tr>
+  <tr><th>Write-through</th><td>Writes go to cache <em>and</em> DB synchronously. Cache always fresh; writes are slower.</td></tr>
+  <tr><th>Write-back (write-behind)</th><td>Write to cache, flush to DB asynchronously. Fast writes, absorbs bursts. Risk: data loss if cache dies before flush.</td></tr>
+</table>
+
+<h2>Eviction policies</h2>
+<ul>
+  <li><strong>LRU</strong> — evict least-recently-used. Good default; matches temporal locality.</li>
+  <li><strong>LFU</strong> — evict least-frequently-used. Better for stable hot sets, worse for changing workloads.</li>
+  <li><strong>TTL</strong> — expire after a fixed time. Bounds staleness regardless of access.</li>
+</ul>
+
+<h2>Cache invalidation — the hard problem</h2>
+<p>"There are only two hard things in CS: cache invalidation and naming things." When the source data changes, the cache must too. Options:</p>
+<ul>
+  <li><strong>TTL</strong> — simplest; accept staleness up to the TTL.</li>
+  <li><strong>Write-through / explicit delete</strong> — delete or update the key on every write.</li>
+  <li><strong>Versioned keys</strong> — embed a version in the key so old data is unreachable.</li>
+</ul>
+<div class="callout warn"><strong>Gotcha:</strong> Prefer <em>deleting</em> the key on write over updating it — concurrent writes can interleave and leave the cache holding the wrong value.</div>
+
+<h2>Thundering herd / cache stampede</h2>
+<p>When a hot key expires, thousands of concurrent requests all miss and hammer the DB at once. Mitigations:</p>
+<ul>
+  <li><strong>Locking / single-flight</strong> — only one request recomputes; others wait.</li>
+  <li><strong>Stale-while-revalidate</strong> — serve stale data while one worker refreshes.</li>
+  <li><strong>Jittered TTLs</strong> — randomize expiry so keys don't all die together.</li>
+</ul>
+
+<h2>Redis use cases</h2>
+<table>
+  <tr><th>Cache</th><td>Key-value with TTL; the default.</td></tr>
+  <tr><th>Session store</th><td>Externalized sessions for stateless app servers.</td></tr>
+  <tr><th>Rate limiting</th><td>Atomic <code>INCR</code> + <code>EXPIRE</code> counters.</td></tr>
+  <tr><th>Leaderboards</th><td>Sorted sets (<code>ZADD</code>/<code>ZRANGE</code>) give ranked queries for free.</td></tr>
+  <tr><th>Pub/Sub &amp; queues</th><td>Lightweight messaging, streams, job queues.</td></tr>
+</table>
+<div class="callout tip"><strong>Senior tip:</strong> Redis is single-threaded for commands, so multi-step operations are best done atomically with Lua scripts or <code>MULTI/EXEC</code> to avoid races (e.g. token-bucket rate limiting).</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Cache-aside vs write-through — when each?</summary><p>Cache-aside for read-heavy data where occasional staleness is fine (the default). Write-through when reads must always see the latest write and you can tolerate slower writes. Write-back when write throughput matters more than durability.</p></details>
+  <details><summary>How do you prevent a cache stampede?</summary><p>Single-flight locking so only one request recomputes a hot key, serve stale-while-revalidate, and add jitter to TTLs so keys don't expire in lockstep.</p></details>
+  <details><summary>Update or delete the cache key on a DB write?</summary><p>Delete. Updating can race with concurrent writes and leave a stale value; deleting forces the next read to repopulate from the source of truth.</p></details>
+  <details><summary>What makes Redis fast and what's the catch?</summary><p>In-memory + single-threaded event loop means no lock contention and predictable latency. The catch: a slow command blocks everything, and memory is finite — you need eviction policies and persistence (RDB/AOF) for durability.</p></details>
+  <details><summary>How would you build a leaderboard?</summary><p>A Redis sorted set: <code>ZADD board score user</code>, then <code>ZREVRANGE</code> for top-N and <code>ZRANK</code> for a user's position — all O(log n), no scanning.</p></details>
+</div>

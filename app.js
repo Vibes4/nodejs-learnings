@@ -3,6 +3,20 @@
    Also handles the persisted dark-mode toggle. */
 
 const MODULES = {
+  "JavaScript": {
+    folder: "javascript",
+    items: [
+      ["types-coercion",       "Types & coercion",       "==, ===, typeof, NaN, falsy"],
+      ["scope-hoisting",       "Scope & hoisting",       "var/let/const, TDZ, blocks"],
+      ["closures",             "Closures",               "lexical scope, data privacy"],
+      ["this-binding",         "this & binding",         "call, apply, bind, arrow"],
+      ["prototypes",           "Prototypes & classes",   "proto chain, inheritance"],
+      ["async",                "Promises & async/await", "microtasks, error handling"],
+      ["array-methods",        "Array & object methods", "map, filter, reduce, spread"],
+      ["es-features",          "Modern JS (ES6+)",       "destructuring, optional chaining"],
+      ["iterators-generators", "Iterators & generators", "Symbol.iterator, yield"]
+    ]
+  },
   "Node.js Core": {
     folder: "node-specific",
     items: [
@@ -74,6 +88,36 @@ const MODULES = {
       ["normalization",     "Normalization",          "1NF–3NF, when to denormalize"]
     ]
   },
+  "DSA": {
+    folder: "dsa",
+    items: [
+      ["big-o",         "Big-O cheat sheet",     "time & space complexity"],
+      ["arrays",        "Arrays",                "two pointers, sliding window"],
+      ["strings",       "Strings",               "anagrams, substrings"],
+      ["hashmap",       "HashMap / HashSet",     "frequency, lookup, dedupe"],
+      ["linked-list",   "Linked List",           "fast/slow, reverse"],
+      ["stack",         "Stack",                 "parentheses, monotonic"],
+      ["queue",         "Queue",                 "BFS, scheduling"],
+      ["trees",         "Trees",                 "DFS, BFS, traversals"],
+      ["graphs",        "Graphs",                "DFS, BFS, visited set"],
+      ["heap",          "Heap / Priority Queue", "top-K, streaming"],
+      ["binary-search", "Binary Search",         "sorted data, O(log n)"],
+      ["lru-cache",     "LRU Cache",             "HashMap + DLL, O(1)"]
+    ]
+  },
+  "System Design": {
+    folder: "system-design",
+    items: [
+      ["fundamentals",         "SD fundamentals",      "scalability, CAP, load balancing"],
+      ["caching",              "Caching & Redis",      "patterns, eviction, invalidation"],
+      ["message-queues",       "Message queues",       "Kafka, RabbitMQ, async work"],
+      ["rate-limiter",         "Rate limiter",         "token bucket, sliding window"],
+      ["url-shortener",        "URL shortener",        "base62, hashing, scale"],
+      ["chat-system",          "Chat system",          "websockets, fan-out, presence"],
+      ["notification-service", "Notification service", "push/email, queues, retries"],
+      ["file-upload",          "File upload service",  "chunking, presigned URLs"]
+    ]
+  },
   "Wrap-up": {
     folder: "express-specific",
     items: [
@@ -93,10 +137,14 @@ const keyOf = (folder, slug) => `${folder}::${slug}`;
 function buildNav() {
   navList.innerHTML = "";
   for (const [group, { folder, items }] of Object.entries(MODULES)) {
-    const title = document.createElement("div");
-    title.className = "nav-group-title";
-    title.textContent = group;
-    navList.appendChild(title);
+    const details = document.createElement("details");
+    details.className = "nav-group";
+    details.open = true;                       // expanded by default; click to collapse
+
+    const summary = document.createElement("summary");
+    summary.className = "nav-group-title";
+    summary.textContent = group;
+    details.appendChild(summary);
 
     items.forEach(([slug, name, blurb]) => {
       const key = keyOf(folder, slug);
@@ -106,13 +154,53 @@ function buildNav() {
       a.dataset.key = key;
       a.href = "#" + key;
       a.innerHTML = `${name}<small>${blurb}</small>`;
-      navList.appendChild(a);
+      details.appendChild(a);
     });
+    navList.appendChild(details);
   }
 }
 
 function escapeHtml(s) {
   return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+/* Turn each <h2> "major concept" + the content that follows it into a
+   collapsible <details class="acc"> panel (open by default, click to close).
+   The <h1>/intro stay as a fixed header; the .interview Q&A card is left
+   untouched (it already has its own per-question accordions). */
+function groupIntoAccordions(root) {
+  const nodes = Array.from(root.childNodes);
+  const frag = document.createDocumentFragment();
+  let body = null; // current open panel's body, or null when outside a panel
+
+  const openPanel = (summaryHTML) => {
+    const d = document.createElement("details");
+    d.className = "acc";
+    d.open = true;
+    const s = document.createElement("summary");
+    s.innerHTML = summaryHTML;
+    body = document.createElement("div");
+    body.className = "acc-body";
+    d.append(s, body);
+    frag.appendChild(d);
+  };
+
+  nodes.forEach(node => {
+    const el = node.nodeType === 1 ? node : null;
+    if (el && el.tagName === "H2") {            // start a new collapsible concept
+      openPanel(el.innerHTML);
+      return;
+    }
+    if (el && el.classList.contains("interview")) {  // leave the Q&A card standalone
+      body = null;
+      frag.appendChild(node);
+      return;
+    }
+    (body || frag).appendChild(node);           // header content, or current panel body
+  });
+
+  root.innerHTML = "";
+  root.appendChild(frag);
 }
 
 async function loadModule(key) {
@@ -121,6 +209,11 @@ async function loadModule(key) {
 
   document.querySelectorAll(".nav-item").forEach(el =>
     el.classList.toggle("active", el.dataset.key === key));
+
+  // make sure the active item's group is expanded
+  const activeEl = document.querySelector(".nav-item.active");
+  const activeGroup = activeEl && activeEl.closest(".nav-group");
+  if (activeGroup) activeGroup.open = true;
 
   const base = `${meta.folder}/${meta.slug}`;
   content.innerHTML = `<p class="placeholder">Loading ${meta.name}…</p>`;
@@ -148,6 +241,7 @@ async function loadModule(key) {
       </div>` : "";
 
     content.innerHTML = explanation + codeBlock;
+    groupIntoAccordions(content);
     content.scrollTop = 0;
   } catch (e) {
     content.innerHTML = `<div class="callout warn"><strong>Could not load module.</strong>
@@ -179,9 +273,18 @@ syncThemeIcon();
 
 /* ---------- Search ---------- */
 search.addEventListener("input", () => {
-  const q = search.value.toLowerCase();
-  document.querySelectorAll(".nav-item").forEach(el => {
-    el.style.display = el.textContent.toLowerCase().includes(q) ? "" : "none";
+  const q = search.value.toLowerCase().trim();
+  document.querySelectorAll(".nav-group").forEach(group => {
+    let anyMatch = false;
+    group.querySelectorAll(".nav-item").forEach(el => {
+      const match = el.textContent.toLowerCase().includes(q);
+      el.style.display = match ? "" : "none";
+      if (match) anyMatch = true;
+    });
+    // while searching, expand groups with hits and hide groups with none;
+    // when the box is cleared, show every group again (expanded)
+    group.style.display = q && !anyMatch ? "none" : "";
+    if (q) group.open = anyMatch; else group.open = true;
   });
 });
 

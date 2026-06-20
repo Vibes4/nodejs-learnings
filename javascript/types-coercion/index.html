@@ -1,0 +1,54 @@
+<h1>Types &amp; coercion <span class="tag">JavaScript</span></h1>
+<p>JavaScript has 7 primitive types and one object type. Understanding the difference — and how the engine silently converts between them — is the foundation for everything else.</p>
+
+<h2>Primitives vs objects</h2>
+<ul>
+  <li><strong>Primitives</strong> (immutable, compared <em>by value</em>): <code>string</code>, <code>number</code>, <code>boolean</code>, <code>undefined</code>, <code>null</code>, <code>symbol</code>, <code>bigint</code>.</li>
+  <li><strong>Objects</strong> (mutable, compared <em>by reference</em>): plain objects, arrays, functions, dates, etc.</li>
+</ul>
+<p><code>const a = {} === {}</code> is <code>false</code> — two distinct references. But <code>1 === 1</code> is <code>true</code> — same value.</p>
+
+<h2>typeof quirks</h2>
+<table>
+  <tr><th>Expression</th><th>Result</th><th>Why</th></tr>
+  <tr><td><code>typeof null</code></td><td><code>'object'</code></td><td>A 30-year-old bug, kept for backward compat.</td></tr>
+  <tr><td><code>typeof NaN</code></td><td><code>'number'</code></td><td>NaN is literally a numeric value.</td></tr>
+  <tr><td><code>typeof []</code></td><td><code>'object'</code></td><td>Use <code>Array.isArray()</code> instead.</td></tr>
+  <tr><td><code>typeof function(){}</code></td><td><code>'function'</code></td><td>The one object type typeof distinguishes.</td></tr>
+  <tr><td><code>typeof undefined</code></td><td><code>'undefined'</code></td><td>Safe even for undeclared vars.</td></tr>
+</table>
+
+<h2>== vs ===</h2>
+<p><code>===</code> (strict) compares value <em>and</em> type — no coercion. <code>==</code> (loose) coerces operands to a common type first, which produces surprising results.</p>
+<table>
+  <tr><th>Expression</th><th><code>==</code></th><th><code>===</code></th></tr>
+  <tr><td><code>0 == ''</code></td><td>true</td><td>false</td></tr>
+  <tr><td><code>0 == '0'</code></td><td>true</td><td>false</td></tr>
+  <tr><td><code>'' == '0'</code></td><td>false</td><td>false</td></tr>
+  <tr><td><code>null == undefined</code></td><td>true</td><td>false</td></tr>
+  <tr><td><code>[] == false</code></td><td>true</td><td>false</td></tr>
+  <tr><td><code>NaN == NaN</code></td><td>false</td><td>false</td></tr>
+</table>
+<div class="callout warn"><strong>Gotcha:</strong> <code>==</code> is non-transitive: <code>'' == 0</code> and <code>0 == '0'</code> are both true, yet <code>'' == '0'</code> is false. Always use <code>===</code> except for one idiom: <code>x == null</code> to catch both <code>null</code> and <code>undefined</code>.</div>
+
+<h2>Falsy values</h2>
+<p>Exactly 8 values are falsy: <code>false</code>, <code>0</code>, <code>-0</code>, <code>0n</code>, <code>''</code>, <code>null</code>, <code>undefined</code>, <code>NaN</code>. Everything else (including <code>[]</code>, <code>{}</code>, <code>'0'</code>, <code>'false'</code>) is truthy.</p>
+
+<h2>NaN &amp; Number checks</h2>
+<ul>
+  <li><code>NaN === NaN</code> is <code>false</code> — the only value not equal to itself.</li>
+  <li><code>Number.isNaN(x)</code> — true only for the actual NaN value (no coercion). Prefer over global <code>isNaN()</code>, which coerces (<code>isNaN('foo')</code> is true).</li>
+  <li><code>Number.isInteger(x)</code>, <code>Number.isFinite(x)</code> — coercion-free numeric checks.</li>
+</ul>
+
+<h2>Object.is</h2>
+<p>Like <code>===</code> but with two refinements: <code>Object.is(NaN, NaN)</code> is <code>true</code>, and <code>Object.is(0, -0)</code> is <code>false</code>. This is the "SameValue" algorithm.</p>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why does <code>typeof null</code> return <code>'object'</code>?</summary><p>A bug from the first JS implementation: values were tagged by type bits, and the null pointer (all zeros) shared the object tag. It can never be fixed without breaking the web.</p></details>
+  <details><summary>When is <code>==</code> actually acceptable?</summary><p>The single defensible use is <code>x == null</code>, which is true for both <code>null</code> and <code>undefined</code> and nothing else. Otherwise always <code>===</code>.</p></details>
+  <details><summary>How do you reliably check for NaN?</summary><p><code>Number.isNaN(x)</code>. The global <code>isNaN()</code> coerces its argument first, so <code>isNaN('abc')</code> wrongly returns true.</p></details>
+  <details><summary>Difference between <code>===</code> and <code>Object.is</code>?</summary><p>Only two cases differ: <code>Object.is</code> treats NaN as equal to NaN, and treats <code>+0</code> and <code>-0</code> as distinct.</p></details>
+  <details><summary>How do you detect an array?</summary><p><code>Array.isArray(x)</code>. <code>typeof</code> reports <code>'object'</code> for arrays, so it can't distinguish them.</p></details>
+</div>

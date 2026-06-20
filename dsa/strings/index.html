@@ -1,0 +1,37 @@
+<h1>Strings <span class="tag db">DSA</span></h1>
+<p>Strings are arrays of characters — the same patterns apply, plus character-frequency tricks. In JS, strings are <em>immutable</em>, so building results means arrays + <code>join</code> or pushing to an output.</p>
+
+<h2>Patterns</h2>
+<ul>
+  <li><strong>HashMap / frequency count</strong> — anagrams, character counts, grouping.</li>
+  <li><strong>Sliding Window</strong> — longest/shortest substring with a constraint.</li>
+  <li><strong>Two Pointers</strong> — palindromes, reversing, comparing from both ends.</li>
+</ul>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Valid Anagram</strong> — compare character counts, <code>O(n)</code>.</li>
+  <li><strong>Group Anagrams</strong> — key each word by its sorted form (or count signature).</li>
+  <li><strong>Longest Substring Without Repeating Characters</strong> — sliding window + last-seen map.</li>
+  <li><strong>Longest Palindromic Substring</strong> — expand around each center, <code>O(n²)</code>.</li>
+</ul>
+
+<h2>Complexity notes</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Index a char</td><td><code>O(1)</code></td></tr>
+  <tr><td>Concatenate in a loop</td><td><code>O(n²)</code> — build an array instead</td></tr>
+  <tr><td>Sort a string of length n</td><td><code>O(n log n)</code></td></tr>
+</table>
+
+<div class="callout tip"><strong>Pattern:</strong> "anagram" → frequency map or sorted-key. "longest/shortest substring" → sliding window with a HashMap/Set of what's in the window.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> Repeated string concatenation in a loop is <code>O(n²)</code> because each <code>+=</code> copies the whole string. Push to an array and <code>join('')</code> once.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Fastest way to check two strings are anagrams?</summary><p>If lengths differ, false. Otherwise count chars in one (increment) and subtract for the other; all counts must return to zero. O(n) time, O(1) space for a fixed alphabet.</p></details>
+  <details><summary>How does "longest substring without repeats" work?</summary><p>Slide a right pointer; track each char's last index in a map. When you hit a repeat inside the window, jump the left pointer past its previous occurrence. O(n).</p></details>
+  <details><summary>How do you group anagrams?</summary><p>Map each word to a canonical key (sorted characters or a 26-length count signature) and bucket words sharing the same key.</p></details>
+  <details><summary>Why are JS strings immutable a concern?</summary><p>You can't mutate in place; building output by repeated concatenation is quadratic. Use a char array and join.</p></details>
+</div>

@@ -1,0 +1,30 @@
+<h1>LRU Cache <span class="tag db">DSA</span></h1>
+<p>A Least-Recently-Used cache holds a fixed number of entries; when full, it evicts the entry that hasn't been touched for the longest time. It's a classic design question because it combines two structures to hit <code>O(1)</code> on both operations.</p>
+
+<h2>The design</h2>
+<p><strong>HashMap + Doubly Linked List.</strong></p>
+<ul>
+  <li><strong>HashMap</strong> — key → node, giving <code>O(1)</code> lookup.</li>
+  <li><strong>Doubly Linked List</strong> — maintains usage order. Most-recently-used at one end (head), least-recently-used at the other (tail).</li>
+</ul>
+<p>On <code>get</code> or <code>put</code>, move the node to the head (most recent). On overflow, evict the tail. A doubly linked list makes both unlink and move-to-head <code>O(1)</code> because each node knows its neighbors.</p>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Get</td><td><code>O(1)</code></td></tr>
+  <tr><td>Put</td><td><code>O(1)</code></td></tr>
+  <tr><td>Space</td><td><code>O(capacity)</code></td></tr>
+</table>
+
+<div class="callout tip"><strong>Pattern:</strong> "O(1) get and O(1) put with eviction" is the signature of HashMap + Doubly Linked List. Sentinel head/tail nodes remove every null-check edge case.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> A singly linked list can't do O(1) removal of an arbitrary node (you'd need the previous node). That's why the doubly linked list is essential. In JS, an insertion-ordered <code>Map</code> can fake it: delete-then-set moves a key to the end.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Why HashMap + doubly linked list?</summary><p>The map gives O(1) key lookup; the doubly linked list gives O(1) reordering and eviction. Together both get and put are O(1).</p></details>
+  <details><summary>Why not a singly linked list?</summary><p>Removing or moving an arbitrary node needs its predecessor. A singly linked list would require an O(n) scan to find it; doubly linked nodes carry a prev pointer.</p></details>
+  <details><summary>What gets evicted and when?</summary><p>When inserting into a full cache, the least-recently-used entry (the list tail) is removed before adding the new entry at the head.</p></details>
+  <details><summary>Can you implement it with a JS Map?</summary><p>Yes — Map preserves insertion order, so on access you delete and re-set the key to move it to the "newest" position, and evict the first key (oldest) when over capacity.</p></details>
+</div>

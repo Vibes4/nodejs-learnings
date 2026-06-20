@@ -1,0 +1,46 @@
+<h1>Promises &amp; async/await <span class="tag">JavaScript</span></h1>
+<p>Promises model an eventual value; <code>async/await</code> is syntax that lets you write asynchronous code that reads like synchronous code. Mastering ordering and error handling here is essential for any backend role.</p>
+
+<h2>Promise states</h2>
+<ul>
+  <li><strong>pending</strong> — not yet settled.</li>
+  <li><strong>fulfilled</strong> — resolved with a value.</li>
+  <li><strong>rejected</strong> — failed with a reason.</li>
+</ul>
+<p>A promise settles <em>once</em> and is then immutable. <code>async</code> functions always return a promise; <code>await</code> unwraps one (and rethrows rejections).</p>
+
+<h2>Chaining</h2>
+<p>Each <code>.then()</code> returns a new promise, so they chain. Returning a value passes it on; returning a promise waits for it. A thrown error or rejection skips down to the next <code>.catch()</code>.</p>
+
+<h2>Error handling</h2>
+<ul>
+  <li>With <code>await</code>: wrap in <code>try/catch</code>.</li>
+  <li>With chains: end with <code>.catch()</code>; one handler covers every prior step.</li>
+  <li><code>.finally()</code> runs regardless of outcome (cleanup).</li>
+</ul>
+<div class="callout warn"><strong>Gotcha:</strong> A rejected promise with no handler triggers an <code>unhandledRejection</code> — in modern Node this crashes the process by default. Always attach a catch.</div>
+
+<h2>Combinators</h2>
+<table>
+  <tr><th>Method</th><th>Resolves when</th><th>Rejects when</th></tr>
+  <tr><td><code>Promise.all</code></td><td>all fulfil (array of values)</td><td>any one rejects (fast-fail)</td></tr>
+  <tr><td><code>Promise.allSettled</code></td><td>all settle (array of {status,...})</td><td>never</td></tr>
+  <tr><td><code>Promise.race</code></td><td>first settles (fulfil or reject)</td><td>first rejects</td></tr>
+  <tr><td><code>Promise.any</code></td><td>first fulfils</td><td>all reject (AggregateError)</td></tr>
+</table>
+
+<h2>Microtask vs macrotask ordering</h2>
+<p>Promise callbacks are <strong>microtasks</strong>; <code>setTimeout</code>/<code>setImmediate</code> are <strong>macrotasks</strong>. After the current synchronous code, the engine drains the <em>entire</em> microtask queue before running the next macrotask. So a resolved promise's <code>.then</code> always runs before a <code>setTimeout(0)</code> scheduled at the same time.</p>
+
+<h2>await-in-loop pitfall</h2>
+<p>Awaiting inside a <code>for</code> loop runs requests <em>sequentially</em> — each waits for the previous. If they're independent, kick them all off and await together with <code>Promise.all</code> for concurrency. Use sequential <code>await</code> only when each step depends on the previous result or you must rate-limit.</p>
+<div class="callout tip"><strong>Senior tip:</strong> <code>Promise.all</code> fast-fails on the first rejection; if you need every result regardless of failures (e.g. a dashboard of independent calls), use <code>Promise.allSettled</code>.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What are the three promise states?</summary><p>pending, fulfilled, rejected. A promise settles exactly once and then never changes.</p></details>
+  <details><summary>Why does a promise <code>.then</code> run before <code>setTimeout(0)</code>?</summary><p>Promise callbacks are microtasks; timers are macrotasks. The whole microtask queue drains after the current task and before the next macrotask.</p></details>
+  <details><summary>Difference between <code>Promise.all</code> and <code>allSettled</code>?</summary><p><code>all</code> rejects as soon as any input rejects (and you lose the other results). <code>allSettled</code> always fulfils with a status object per input, so partial failures are visible.</p></details>
+  <details><summary>What's wrong with awaiting in a loop?</summary><p>It serializes independent async work. For concurrency, start all promises and <code>await Promise.all([...])</code>. Sequential await is only correct when steps depend on each other.</p></details>
+  <details><summary>What happens to an unhandled rejection in Node?</summary><p>It fires the <code>unhandledRejection</code> event and, by default in modern Node, terminates the process. Always attach <code>.catch</code> or wrap awaits in try/catch.</p></details>
+</div>

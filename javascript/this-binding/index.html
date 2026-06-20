@@ -1,0 +1,33 @@
+<h1>this &amp; binding <span class="tag">JavaScript</span></h1>
+<p><code>this</code> is determined by <em>how a function is called</em>, not where it's defined (arrow functions are the exception). Four rules decide its value, applied in priority order.</p>
+
+<h2>The 4 binding rules (highest priority first)</h2>
+<ol>
+  <li><strong>new binding</strong> — <code>new Foo()</code> creates a fresh object and binds <code>this</code> to it.</li>
+  <li><strong>explicit binding</strong> — <code>fn.call(obj)</code>, <code>fn.apply(obj)</code>, or a function returned by <code>fn.bind(obj)</code> force <code>this</code> to <code>obj</code>.</li>
+  <li><strong>implicit binding</strong> — <code>obj.method()</code> binds <code>this</code> to <code>obj</code> (the object left of the dot).</li>
+  <li><strong>default binding</strong> — a plain <code>fn()</code> call: <code>this</code> is the global object (non-strict) or <code>undefined</code> (strict mode / ES modules).</li>
+</ol>
+<table>
+  <tr><th>Method</th><th>Behaviour</th></tr>
+  <tr><td><code>fn.call(ctx, a, b)</code></td><td>Invoke now with <code>this = ctx</code>, args listed.</td></tr>
+  <tr><td><code>fn.apply(ctx, [a, b])</code></td><td>Invoke now, args as an array.</td></tr>
+  <tr><td><code>fn.bind(ctx)</code></td><td>Return a new function permanently bound to <code>ctx</code>.</td></tr>
+</table>
+
+<h2>Arrow functions capture lexical <code>this</code></h2>
+<p>Arrow functions have no <code>this</code> of their own — they inherit it from the enclosing lexical scope at definition time. <code>call</code>/<code>apply</code>/<code>bind</code> cannot change an arrow's <code>this</code>. This makes them ideal for callbacks inside methods (no more <code>const self = this</code>).</p>
+<div class="callout warn"><strong>Gotcha:</strong> Never use an arrow function as an object method if you need <code>this</code> to be that object — it'll capture the outer scope (often module/global) instead.</div>
+
+<h2>Losing <code>this</code> in callbacks</h2>
+<p>Passing a method as a bare reference (<code>setTimeout(obj.method)</code>, <code>arr.forEach(obj.method)</code>) strips the implicit binding — it's now a plain call, so <code>this</code> is <code>undefined</code>. Fixes: <code>obj.method.bind(obj)</code>, wrap in an arrow <code>() =&gt; obj.method()</code>, or define the method as a class field arrow.</p>
+<div class="callout tip"><strong>Senior tip:</strong> The reliable mental model: read the call site, find what's immediately left of <code>()</code>. <code>new</code> &gt; <code>bind/call/apply</code> &gt; <code>obj.</code> &gt; bare call. Arrows opt out entirely and use the surrounding scope.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What determines <code>this</code>?</summary><p>The call site, via four rules in priority order: <code>new</code>, explicit (call/apply/bind), implicit (obj.method), then default (undefined in strict mode). Arrow functions ignore all of these and use lexical scope.</p></details>
+  <details><summary>Difference between call, apply, and bind?</summary><p><code>call</code> and <code>apply</code> invoke immediately (args listed vs. as an array). <code>bind</code> returns a new function with <code>this</code> permanently fixed, to invoke later.</p></details>
+  <details><summary>Why is <code>this</code> undefined when I pass <code>obj.method</code> as a callback?</summary><p>You passed the function value, not the call. The implicit <code>obj.</code> binding only applies at the call site; the callback later invokes it plainly, so <code>this</code> is lost.</p></details>
+  <details><summary>Can you rebind an arrow function's <code>this</code>?</summary><p>No. Arrows capture <code>this</code> lexically at creation; <code>call</code>/<code>apply</code>/<code>bind</code> have no effect on it.</p></details>
+  <details><summary>What is <code>this</code> in a standalone function in strict mode?</summary><p><code>undefined</code>. In non-strict mode it's the global object (<code>globalThis</code>).</p></details>
+</div>

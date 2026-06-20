@@ -1,0 +1,41 @@
+<h1>Graphs <span class="tag db">DSA</span></h1>
+<p>A graph is nodes (vertices) connected by edges. Trees and linked lists are special cases. The two must-know traversals — DFS and BFS — plus a <strong>visited set</strong> to avoid infinite loops solve a huge share of graph problems.</p>
+
+<h2>Representations</h2>
+<table>
+  <tr><th>Form</th><th>Space</th><th>Edge check</th><th>Best for</th></tr>
+  <tr><td>Adjacency list</td><td><code>O(V + E)</code></td><td><code>O(degree)</code></td><td>Sparse graphs (most real graphs)</td></tr>
+  <tr><td>Adjacency matrix</td><td><code>O(V²)</code></td><td><code>O(1)</code></td><td>Dense graphs, frequent edge lookups</td></tr>
+</table>
+
+<h2>Must know</h2>
+<ul>
+  <li><strong>DFS</strong> — recursion or explicit stack; go deep, backtrack. Great for connectivity, cycle detection, topological sort.</li>
+  <li><strong>BFS</strong> — queue; explore by distance. Gives the shortest path in an <em>unweighted</em> graph.</li>
+  <li><strong>Visited set</strong> — mark nodes as you enqueue/visit them, never revisit. Without it, cycles loop forever.</li>
+</ul>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Traversal</th><th>Big-O</th></tr>
+  <tr><td>DFS</td><td><code>O(V + E)</code></td></tr>
+  <tr><td>BFS</td><td><code>O(V + E)</code></td></tr>
+</table>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Number of Islands</strong> — flood-fill (DFS/BFS) each unvisited land cell; count components.</li>
+  <li><strong>Clone Graph</strong> — DFS/BFS with a map from original node → copy.</li>
+</ul>
+
+<div class="callout warn"><strong>Gotcha:</strong> Mark a node visited <em>when you enqueue it in BFS</em>, not when you dequeue — otherwise the same node gets added multiple times.</div>
+
+<div class="callout tip"><strong>Pattern:</strong> A 2D grid is a graph in disguise — each cell connects to its 4 (or 8) neighbors. Islands, flood fill, and shortest-path-in-maze are all grid BFS/DFS.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>DFS vs BFS — which gives shortest path?</summary><p>BFS, in an unweighted graph, because it expands outward by distance. DFS does not guarantee the shortest path.</p></details>
+  <details><summary>Adjacency list vs matrix?</summary><p>List uses O(V+E) space and is ideal for sparse graphs; matrix uses O(V²) but offers O(1) edge existence checks — good for dense graphs.</p></details>
+  <details><summary>Why is traversal O(V + E)?</summary><p>Each vertex is processed once and each edge is examined a constant number of times.</p></details>
+  <details><summary>How do you solve Number of Islands?</summary><p>Scan the grid; on each unvisited '1', run DFS/BFS to sink the whole connected landmass, and increment a counter once per launch.</p></details>
+</div>

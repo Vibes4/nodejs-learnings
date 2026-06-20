@@ -1,0 +1,47 @@
+<h1>Chat system <span class="tag express">System Design</span></h1>
+<p>Design a real-time messaging service (think WhatsApp/Slack). The core challenges are <strong>persistent connections at scale</strong>, fan-out, presence, and ordering.</p>
+
+<h2>Requirements</h2>
+<ul>
+  <li><strong>Functional:</strong> 1:1 and group chat, online <strong>presence</strong>, <strong>delivery receipts</strong> (sent/delivered/read), message history, push for offline users.</li>
+  <li><strong>Non-functional:</strong> low latency, high availability, ordered delivery, huge concurrent connection count.</li>
+</ul>
+
+<h2>Transport: WebSockets vs long-polling</h2>
+<table>
+  <tr><th>WebSocket</th><td>Full-duplex persistent TCP connection; the server can push instantly. The standard choice for chat.</td></tr>
+  <tr><th>Long-polling</th><td>Client holds an HTTP request open until there's data, then reconnects. Works through old proxies; higher overhead and latency. A fallback.</td></tr>
+  <tr><th>SSE</th><td>Server-sent events: one-way server→client push. Simpler than WS but no client→server channel.</td></tr>
+</table>
+
+<h2>Connection servers + session store</h2>
+<p>Users connect to one of many stateless-ish <strong>connection (gateway) servers</strong> that each hold thousands of live WebSockets. Because a recipient may be connected to a <em>different</em> server, you need a <strong>session store / service discovery</strong> mapping <code>userId → connectionServer</code> (in Redis). To deliver a message, look up the recipient's server and route to it (often via an internal pub/sub bus).</p>
+
+<h2>Message fan-out</h2>
+<ul>
+  <li><strong>1:1:</strong> look up the recipient's connection server and push.</li>
+  <li><strong>Group:</strong> fan out to each member. Small groups → push directly; large groups/channels → a pub/sub topic per room that connection servers subscribe to.</li>
+</ul>
+
+<h2>Storing messages</h2>
+<p>Persist every message for history and offline delivery, partitioned by chat/conversation id and ordered by time. A wide-column store (Cassandra) or sharded SQL fits the high write volume and time-ordered reads.</p>
+
+<h2>Presence</h2>
+<p>Track online/offline via connection lifecycle + heartbeats. Store <code>userId → lastSeen</code> in Redis with a short TTL refreshed by pings; missing/expired = offline. At scale, presence updates are themselves fanned out only to interested contacts to avoid a broadcast storm.</p>
+
+<h2>Offline users &amp; push</h2>
+<p>If the recipient isn't connected, store the message as undelivered and trigger a <strong>push notification</strong> (APNs/FCM) via the notification service. On reconnect, the client syncs missed messages by last-seen message id.</p>
+
+<h2>Ordering</h2>
+<p>Guarantee order <em>per conversation</em>, not globally. Use a monotonic per-conversation sequence number or server timestamps; clients sort by it and dedupe by message id (delivery is at-least-once).</p>
+<div class="callout warn"><strong>Gotcha:</strong> Don't rely on client clocks for ordering — they drift. Assign a server-side sequence/timestamp per conversation.</div>
+<div class="callout tip"><strong>Senior tip:</strong> The hard part isn't the chat logic — it's routing a message to a recipient who's connected to a different gateway. Solve it with a Redis session map plus an internal pub/sub bus between connection servers.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>WebSockets vs long-polling for chat?</summary><p>WebSockets: a persistent full-duplex connection lets the server push instantly with low overhead — the default. Long-polling is a fallback for restrictive networks but has more latency and reconnect overhead.</p></details>
+  <details><summary>How do two users on different servers exchange messages?</summary><p>A Redis session store maps userId→gateway server. The sender's server looks up the recipient's server and routes the message there (typically over an internal pub/sub bus), which pushes it down the recipient's socket.</p></details>
+  <details><summary>How do you handle group/channel fan-out at scale?</summary><p>Use a pub/sub topic per room. Connection servers subscribe on behalf of their connected members, so one publish fans out without the sender knowing every recipient's location.</p></details>
+  <details><summary>How is presence implemented?</summary><p>Connection lifecycle plus heartbeats: store userId→lastSeen in Redis with a short TTL refreshed by pings. Expired = offline. Fan presence changes only to interested contacts to avoid broadcast storms.</p></details>
+  <details><summary>How do you guarantee ordering?</summary><p>Order per conversation using a server-assigned monotonic sequence number or timestamp; clients sort by it and dedupe by message id, since delivery is at-least-once.</p></details>
+</div>

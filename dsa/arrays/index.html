@@ -1,0 +1,40 @@
+<h1>Arrays <span class="tag db">DSA</span></h1>
+<p>Arrays are contiguous, index-addressable memory. The interview game is recognizing which of four patterns collapses a brute-force <code>O(n²)</code> into <code>O(n)</code>.</p>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Access by index</td><td><code>O(1)</code></td></tr>
+  <tr><td>Search (unsorted)</td><td><code>O(n)</code></td></tr>
+  <tr><td>Insert / remove at end</td><td><code>O(1)</code> amortized</td></tr>
+  <tr><td>Insert / remove at front</td><td><code>O(n)</code> (shifts all)</td></tr>
+</table>
+
+<h2>Patterns</h2>
+<ul>
+  <li><strong>Two Pointers</strong> — sorted arrays, pairs, in-place moves. Converge from both ends or run at different speeds.</li>
+  <li><strong>Sliding Window</strong> — contiguous subarray with a constraint (max sum of size k, longest subarray under a limit).</li>
+  <li><strong>Prefix Sum</strong> — answer range-sum queries in <code>O(1)</code> after <code>O(n)</code> preprocessing.</li>
+  <li><strong>HashMap</strong> — trade space for O(1) lookups (complements, seen-before).</li>
+</ul>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Two Sum</strong> — HashMap of complements, <code>O(n)</code>.</li>
+  <li><strong>Best Time to Buy/Sell Stock</strong> — track min-so-far, one pass.</li>
+  <li><strong>Product of Array Except Self</strong> — prefix &amp; suffix products, no division.</li>
+  <li><strong>Move Zeroes</strong> — two pointers, in-place.</li>
+  <li><strong>Merge Intervals</strong> — sort by start, then merge overlaps.</li>
+</ul>
+
+<div class="callout tip"><strong>Pattern:</strong> "contiguous subarray" or "substring" almost always means Sliding Window. "Pair that sums to X" means HashMap or Two Pointers.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> Two Pointers needs a <em>sorted</em> array (or a problem where order doesn't matter). If sorting breaks the answer, reach for a HashMap instead.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How do you spot a sliding-window problem?</summary><p>It asks about a contiguous range (subarray/substring) optimizing a sum, length, or count under a constraint.</p></details>
+  <details><summary>Two Sum in O(n) — how?</summary><p>Iterate once; for each value check if <code>target - value</code> is already in a HashMap. If yes, return both indices; otherwise store the current value→index.</p></details>
+  <details><summary>Product Except Self without division?</summary><p>Compute prefix products left-to-right, then multiply by suffix products right-to-left in a second pass. O(n) time, O(1) extra (output array aside).</p></details>
+  <details><summary>Why is front insertion O(n)?</summary><p>Every existing element must shift one slot to make room, so cost scales with array length.</p></details>
+</div>

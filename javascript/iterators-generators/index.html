@@ -1,0 +1,28 @@
+<h1>Iterators &amp; generators <span class="tag">JavaScript</span></h1>
+<p>Iterators define <em>how</em> a collection is traversed; generators are a concise way to write iterators (and to model lazy or infinite sequences). They're what powers <code>for...of</code>, spread, and destructuring.</p>
+
+<h2>The iterator protocol</h2>
+<p>An <strong>iterator</strong> is any object with a <code>next()</code> method that returns <code>{ value, done }</code>. An object is <strong>iterable</strong> if it has a <code>[Symbol.iterator]()</code> method returning an iterator. Arrays, strings, Maps, and Sets are all built-in iterables.</p>
+
+<h2>Symbol.iterator — making an object iterable</h2>
+<p>Define <code>[Symbol.iterator]()</code> on your object and it instantly works with <code>for...of</code>, spread (<code>[...obj]</code>), <code>Array.from</code>, and array destructuring. This is how you give a custom type "collection" behaviour.</p>
+
+<h2>Generator functions</h2>
+<p>Declared with <code>function*</code>. Calling one returns a generator object (an iterator) without running the body. Each <code>yield</code> pauses execution and emits a value; the next <code>next()</code> resumes right after that <code>yield</code>. The function's local state is preserved between calls — no manual bookkeeping.</p>
+<div class="callout"><strong>Note:</strong> A generator is both an iterator and iterable (its <code>[Symbol.iterator]</code> returns itself), so you can drop one straight into <code>for...of</code>. <code>yield*</code> delegates to another iterable.</div>
+
+<h2>Lazy sequences</h2>
+<p>Generators compute values on demand. Nothing runs until you pull the next value, so you can build pipelines (map/filter over a generator) that touch only the elements you actually consume — no intermediate arrays.</p>
+
+<h2>Infinite sequences</h2>
+<p>Because they're lazy, generators can model unbounded streams safely — an infinite <code>while (true)</code> loop with a <code>yield</code> only advances when asked. Take as many values as you need with a counter or a <code>take(n)</code> helper.</p>
+<div class="callout tip"><strong>Senior tip:</strong> Reach for generators for paginated APIs (yield page after page), streaming/large-data processing without buffering everything, and ID/sequence generators. They turn "pull as needed" into a few lines.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What makes an object iterable?</summary><p>A <code>[Symbol.iterator]()</code> method that returns an iterator — an object with <code>next()</code> yielding <code>{ value, done }</code>. Then <code>for...of</code>, spread, and destructuring all work on it.</p></details>
+  <details><summary>What does <code>yield</code> do?</summary><p>It pauses the generator, emits a value to the caller, and preserves all local state until <code>next()</code> resumes execution right after that <code>yield</code>.</p></details>
+  <details><summary>How can a generator be infinite without hanging?</summary><p>Generators are lazy — the body only advances when <code>next()</code> is called. An infinite loop with <code>yield</code> produces one value per pull, so you control how many you take.</p></details>
+  <details><summary>Difference between an iterator and an iterable?</summary><p>An iterable has <code>[Symbol.iterator]()</code> (a factory for iterators). An iterator has <code>next()</code>. Generators are both — their iterator method returns themselves.</p></details>
+  <details><summary>Where are generators genuinely useful?</summary><p>Lazy/large-data pipelines, infinite or paginated sequences, custom iteration over a data structure, and producing values incrementally without buffering the whole set in memory.</p></details>
+</div>

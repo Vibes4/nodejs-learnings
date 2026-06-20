@@ -1,0 +1,36 @@
+<h1>Queue <span class="tag db">DSA</span></h1>
+<p>A queue is FIFO — first in, first out. It's the engine behind breadth-first search and any "process in arrival order" workload.</p>
+
+<h2>Operations</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Enqueue (add to back)</td><td><code>O(1)</code></td></tr>
+  <tr><td>Dequeue (remove from front)</td><td><code>O(1)</code></td></tr>
+  <tr><td>Peek (front)</td><td><code>O(1)</code></td></tr>
+</table>
+
+<h2>Use it for</h2>
+<ul>
+  <li><strong>BFS</strong> — level-order traversal of trees and graphs, shortest path in unweighted graphs.</li>
+  <li><strong>Scheduling</strong> — task queues, the event loop's callback/timer queues, printer jobs.</li>
+  <li><strong>Buffering / streaming</strong> — producer/consumer pipelines.</li>
+</ul>
+
+<h2>Variants</h2>
+<ul>
+  <li><strong>Circular queue</strong> — fixed-size ring buffer; front/rear wrap around with modulo. Avoids shifting elements.</li>
+  <li><strong>Deque</strong> — double-ended; push/pop at both ends (sliding-window maximum).</li>
+  <li><strong>Queue from two stacks</strong> — an <em>in</em> stack and an <em>out</em> stack; amortized <code>O(1)</code> dequeue.</li>
+</ul>
+
+<div class="callout warn"><strong>Gotcha:</strong> In JS, <code>array.shift()</code> is <code>O(n)</code> because it reindexes. For large queues use a head index, a linked list, or a circular buffer to keep dequeue truly <code>O(1)</code>.</div>
+
+<div class="callout tip"><strong>Pattern:</strong> "shortest path in an unweighted graph" or "process level by level" → BFS with a queue.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Queue vs stack — which for BFS vs DFS?</summary><p>BFS uses a queue (FIFO, explores by levels); DFS uses a stack or recursion (LIFO, goes deep first).</p></details>
+  <details><summary>How do two stacks make a queue?</summary><p>Push onto an "in" stack. To dequeue, if "out" is empty, pour all of "in" into "out" (reversing order), then pop "out". Amortized O(1).</p></details>
+  <details><summary>Why a circular queue?</summary><p>A fixed array with wrap-around indices reuses freed slots without shifting, giving true O(1) enqueue/dequeue and bounded memory.</p></details>
+  <details><summary>Why avoid Array.shift() for a queue?</summary><p>It removes the first element and reindexes the rest — O(n) per dequeue.</p></details>
+</div>

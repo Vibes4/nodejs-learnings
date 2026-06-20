@@ -106,6 +106,24 @@ html { scroll-behavior: smooth; }
   color: var(--nav-group);
   font-weight: 700;
 }
+/* Collapsible sidebar groups (built by app.js) */
+summary.nav-group-title {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+summary.nav-group-title::-webkit-details-marker { display: none; }
+summary.nav-group-title::before {
+  content: "▸";
+  font-size: 9px;
+  color: var(--nav-muted);
+  transition: transform .15s ease;
+}
+details.nav-group[open] > summary.nav-group-title::before { transform: rotate(90deg); }
+summary.nav-group-title:hover { color: var(--nav-text); }
 .nav-item {
   display: block;
   padding: 8px 16px;
@@ -147,6 +165,26 @@ code:not(pre code) {
 .callout.warn { border-left-color: var(--callout-warn-border); background: var(--callout-warn-bg); }
 .callout.tip  { border-left-color: var(--callout-tip-border); background: var(--callout-tip-bg); }
 .callout strong { display: inline-block; margin-bottom: 2px; }
+
+/* ---------- Collapsible concept panels (built by app.js) ---------- */
+details.acc { border: 1px solid var(--border-soft); border-radius: 8px; margin: 14px 0; overflow: hidden; }
+details.acc > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 18px; font-weight: 600; color: var(--heading);
+  background: var(--interview-bg);
+}
+details.acc > summary::-webkit-details-marker { display: none; }
+details.acc > summary::before {
+  content: "▸"; color: var(--muted); font-size: 14px;
+  transition: transform .15s ease; flex: 0 0 auto;
+}
+details.acc[open] > summary::before { transform: rotate(90deg); }
+details.acc > summary:hover { color: var(--accent); }
+.acc-body { padding: 2px 18px 14px; }
+.acc-body > :first-child { margin-top: 8px; }
+/* h2 lived inside the panel summary now — neutralize stray nested headings */
+.acc-body h2 { border: none; margin: 14px 0 8px; }
 
 .interview { background: var(--interview-bg); border: 1px solid var(--interview-border); border-radius: 8px; padding: 14px 18px; margin: 18px 0; }
 .interview h3 { margin-top: 0; color: var(--interview-heading); }

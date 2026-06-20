@@ -1,0 +1,43 @@
+<h1>Modern JS (ES6+) <span class="tag">JavaScript</span></h1>
+<p>The features added since ES2015 that you're expected to use idiomatically. They make code shorter, safer against <code>null</code>/<code>undefined</code>, and more expressive.</p>
+
+<h2>Destructuring (with defaults)</h2>
+<p>Unpack arrays and objects, supply defaults for missing values, rename, and read nested structures: <code>const { a = 1, b: renamed, nested: { c } = {} } = obj</code>. Defaults apply only when the value is <code>undefined</code> (not <code>null</code>).</p>
+
+<h2>Optional chaining <code>?.</code></h2>
+<p><code>obj?.a?.b</code> short-circuits to <code>undefined</code> the moment a link is <code>null</code> or <code>undefined</code>, instead of throwing. Works for calls (<code>fn?.()</code>) and indexes (<code>arr?.[0]</code>).</p>
+<div class="callout warn"><strong>Gotcha:</strong> <code>?.</code> only guards <code>null</code>/<code>undefined</code>, not other falsy values. And don't over-use it — silencing every access can hide real bugs.</div>
+
+<h2>Nullish coalescing <code>??</code></h2>
+<p><code>a ?? b</code> returns <code>b</code> only when <code>a</code> is <code>null</code> or <code>undefined</code>. Unlike <code>||</code>, it does <em>not</em> treat <code>0</code>, <code>''</code>, or <code>false</code> as missing — exactly what you want for defaults on numbers and booleans.</p>
+<table>
+  <tr><th>Input</th><th><code>a || 'def'</code></th><th><code>a ?? 'def'</code></th></tr>
+  <tr><td><code>0</code></td><td>'def'</td><td>0</td></tr>
+  <tr><td><code>''</code></td><td>'def'</td><td>''</td></tr>
+  <tr><td><code>null</code></td><td>'def'</td><td>'def'</td></tr>
+</table>
+
+<h2>Template literals</h2>
+<p>Backtick strings with <code>${expr}</code> interpolation and real multi-line support. Tagged templates (<code>tag`...`</code>) let a function process the parts — used for i18n, SQL builders, styled-components.</p>
+
+<h2>Default &amp; rest parameters</h2>
+<p><code>function f(a, b = 10, ...rest)</code> — <code>b</code> defaults when <code>undefined</code>; <code>rest</code> gathers extra args into a real array (replacing the old <code>arguments</code> object).</p>
+
+<h2>Map &amp; Set</h2>
+<ul>
+  <li><strong><code>Map</code></strong> — keyed collection with <em>any</em> key type (objects too), insertion-ordered, <code>.size</code>, real iteration. Prefer over plain objects for dynamic dictionaries.</li>
+  <li><strong><code>Set</code></strong> — unique values; <code>[...new Set(arr)]</code> is the canonical dedupe.</li>
+</ul>
+
+<h2>Modules (import/export)</h2>
+<p>ES modules: <code>export const x</code> / <code>export default</code> and <code>import { x } from './m.js'</code>. Static, tree-shakeable, top-level <code>await</code> allowed. In Node, enable via <code>"type": "module"</code> or <code>.mjs</code>. (This demo uses CommonJS so it runs on any Node without config.)</p>
+<div class="callout tip"><strong>Senior tip:</strong> Use <code>??</code> for value defaults (preserves <code>0</code>/<code>''</code>), and <code>?.</code> with <code>??</code> together: <code>config?.timeout ?? 30</code> reads "the configured timeout, or 30".</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Difference between <code>||</code> and <code>??</code>?</summary><p><code>||</code> falls back on any falsy value (<code>0</code>, <code>''</code>, <code>false</code>); <code>??</code> only falls back on <code>null</code>/<code>undefined</code>. Use <code>??</code> for numeric and boolean defaults.</p></details>
+  <details><summary>When does a destructuring default apply?</summary><p>Only when the value is <code>undefined</code>. An explicit <code>null</code> is kept, not replaced by the default.</p></details>
+  <details><summary>When choose <code>Map</code> over a plain object?</summary><p>When keys aren't strings/symbols, when you need guaranteed insertion order, frequent add/delete, easy <code>.size</code>, or to avoid prototype-key collisions.</p></details>
+  <details><summary>How do you dedupe an array?</summary><p><code>[...new Set(arr)]</code> — Set keeps only unique values, then spread back into an array.</p></details>
+  <details><summary>What does <code>obj?.a.b</code> do if <code>obj</code> is null?</summary><p>It short-circuits to <code>undefined</code> at <code>obj?.</code> without evaluating <code>.a.b</code>, avoiding a TypeError.</p></details>
+</div>

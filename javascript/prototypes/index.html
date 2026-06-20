@@ -1,0 +1,36 @@
+<h1>Prototypes &amp; classes <span class="tag">JavaScript</span></h1>
+<p>JavaScript inheritance is prototype-based: objects link to other objects. ES6 <code>class</code> is syntactic sugar over this same machinery — understanding the chain underneath is what separates juniors from seniors.</p>
+
+<h2>The prototype chain</h2>
+<p>Every object has an internal <code>[[Prototype]]</code> link. When you read a property, the engine checks the object, then its prototype, then <em>its</em> prototype, up to <code>null</code>. Method lookup walks this chain; the first match wins. Writes, by contrast, happen on the object itself (they don't mutate the prototype).</p>
+
+<h2>__proto__ vs prototype</h2>
+<table>
+  <tr><th></th><th><code>prototype</code></th><th><code>__proto__</code></th></tr>
+  <tr><td>Lives on</td><td>constructor functions</td><td>every object (instance)</td></tr>
+  <tr><td>Is</td><td>the object that instances will link to</td><td>the actual link to this object's prototype</td></tr>
+  <tr><td>Relation</td><td colspan="2"><code>new Foo().__proto__ === Foo.prototype</code></td></tr>
+</table>
+<div class="callout"><strong>Note:</strong> Prefer <code>Object.getPrototypeOf(obj)</code> over the legacy <code>__proto__</code> accessor in real code.</div>
+
+<h2>How method lookup works</h2>
+<p>Calling <code>arr.map(...)</code> finds <code>map</code> not on the array but on <code>Array.prototype</code>. <code>obj.toString()</code> falls all the way through to <code>Object.prototype.toString</code>. Defining a method on the prototype means one shared copy across all instances (memory-efficient) rather than one per instance.</p>
+
+<h2>ES6 class is sugar</h2>
+<p>A <code>class</code> creates a constructor function; methods declared in the body go on its <code>.prototype</code>. The behaviour is identical to the old constructor-function pattern, just clearer. Classes are not hoisted usefully (TDZ) and run in strict mode.</p>
+
+<h2>Inheritance: extends &amp; super</h2>
+<p><code>class Dog extends Animal</code> links <code>Dog.prototype</code> to <code>Animal.prototype</code>. In the subclass constructor you must call <code>super(...)</code> before using <code>this</code>; <code>super.method()</code> calls the parent's version.</p>
+
+<h2>Object.create</h2>
+<p><code>Object.create(proto)</code> makes a new object with its <code>[[Prototype]]</code> set directly to <code>proto</code> — prototypal inheritance without any constructor or class. <code>Object.create(null)</code> makes a truly bare dictionary with no inherited properties (no <code>toString</code>, etc.).</p>
+<div class="callout tip"><strong>Senior tip:</strong> Put shared methods on the prototype (one copy); put per-instance state in the constructor. Classes do this for you automatically — methods land on the prototype, fields on the instance.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>Difference between <code>__proto__</code> and <code>prototype</code>?</summary><p><code>prototype</code> is a property on constructor functions — the object future instances link to. <code>__proto__</code> is the live link on an instance to its prototype. Thus <code>new Foo().__proto__ === Foo.prototype</code>.</p></details>
+  <details><summary>How does property lookup work?</summary><p>The engine checks the object, then walks the prototype chain via <code>[[Prototype]]</code> until it finds the property or reaches <code>null</code>. First match wins; reads traverse, writes land on the instance.</p></details>
+  <details><summary>Is an ES6 class a real class?</summary><p>No — it's syntactic sugar over constructor functions and prototypes. Methods go on the <code>.prototype</code>; <code>extends</code> wires up the prototype chain.</p></details>
+  <details><summary>Why define methods on the prototype instead of in the constructor?</summary><p>Prototype methods are shared — one function for all instances. Defining them in the constructor creates a separate copy per instance, wasting memory.</p></details>
+  <details><summary>What does <code>Object.create(null)</code> give you?</summary><p>An object with no prototype at all — a clean dictionary with no inherited keys like <code>toString</code> or <code>hasOwnProperty</code>, safe for use as a map.</p></details>
+</div>

@@ -1,0 +1,38 @@
+<h1>Stack <span class="tag db">DSA</span></h1>
+<p>A stack is LIFO — last in, first out. In JS, an array with <code>push</code>/<code>pop</code> is a stack. It shines whenever you need to remember "the most recent unmatched thing."</p>
+
+<h2>Operations</h2>
+<table>
+  <tr><th>Operation</th><th>Big-O</th></tr>
+  <tr><td>Push</td><td><code>O(1)</code></td></tr>
+  <tr><td>Pop</td><td><code>O(1)</code></td></tr>
+  <tr><td>Peek (top)</td><td><code>O(1)</code></td></tr>
+  <tr><td>Search</td><td><code>O(n)</code></td></tr>
+</table>
+
+<h2>Use it for</h2>
+<ul>
+  <li><strong>Nested structures</strong> — matching brackets, HTML tags, JSON depth.</li>
+  <li><strong>Expression evaluation</strong> — postfix (RPN), operator precedence.</li>
+  <li><strong>Backtracking / undo</strong> — DFS, browser history, function call stack.</li>
+  <li><strong>Monotonic stack</strong> — next greater/smaller element in <code>O(n)</code>.</li>
+</ul>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Valid Parentheses</strong> — push openers, pop &amp; match on closers.</li>
+  <li><strong>Min Stack</strong> — track the running minimum alongside each push.</li>
+  <li><strong>Next Greater Element</strong> — monotonic decreasing stack.</li>
+</ul>
+
+<div class="callout tip"><strong>Pattern:</strong> "match nested pairs" or "most recent unresolved item" → stack. "next greater/smaller for each element" → monotonic stack.</div>
+
+<div class="callout warn"><strong>Gotcha:</strong> For Valid Parentheses, an empty stack when you hit a closing bracket means <em>invalid</em>, and a non-empty stack at the end also means invalid (unclosed openers).</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>How does a MinStack get the minimum in O(1)?</summary><p>Keep a parallel stack (or store pairs) where each entry records the min of the stack up to that point. Pop both together; the top of the min-stack is the current minimum.</p></details>
+  <details><summary>What is a monotonic stack?</summary><p>A stack kept in sorted (increasing or decreasing) order by popping elements that violate the order. It answers "next greater/smaller element" for all items in O(n).</p></details>
+  <details><summary>Why a stack for Valid Parentheses?</summary><p>The most recently opened bracket must close first — LIFO exactly models nesting.</p></details>
+  <details><summary>Where do stacks show up implicitly?</summary><p>The call stack for recursion, DFS, and undo/redo or browser back/forward.</p></details>
+</div>

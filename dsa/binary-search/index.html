@@ -1,0 +1,37 @@
+<h1>Binary Search <span class="tag db">DSA</span></h1>
+<p>Binary search halves the search space each step to find a target in <code>O(log n)</code>. The non-negotiable precondition: the data must be <strong>sorted</strong> (or monotonic with respect to your condition).</p>
+
+<h2>Complexity</h2>
+<table>
+  <tr><th>Aspect</th><th>Value</th></tr>
+  <tr><td>Time</td><td><code>O(log n)</code></td></tr>
+  <tr><td>Space (iterative)</td><td><code>O(1)</code></td></tr>
+  <tr><td>Precondition</td><td>sorted / monotonic</td></tr>
+</table>
+
+<h2>The template</h2>
+<ol>
+  <li><code>lo = 0</code>, <code>hi = n - 1</code>.</li>
+  <li>While <code>lo &lt;= hi</code>: <code>mid = lo + ((hi - lo) &gt;&gt; 1)</code>.</li>
+  <li>Compare <code>arr[mid]</code> to target; move <code>lo</code> or <code>hi</code> past <code>mid</code>.</li>
+</ol>
+
+<h2>Common questions</h2>
+<ul>
+  <li><strong>Binary Search</strong> — classic find-index-or-(-1).</li>
+  <li><strong>Search Insert Position</strong> — where the target would go to keep order sorted.</li>
+  <li><strong>First / Last Occurrence</strong> — lower/upper bound when duplicates exist.</li>
+  <li><strong>Search in Rotated Sorted Array</strong> — decide which half is sorted, then recurse.</li>
+</ul>
+
+<div class="callout warn"><strong>Gotcha:</strong> Use <code>mid = lo + Math.floor((hi - lo) / 2)</code> to avoid integer overflow (relevant in fixed-width languages) and watch off-by-one: choosing <code>lo &lt;= hi</code> vs <code>lo &lt; hi</code> changes your loop invariant.</div>
+
+<div class="callout tip"><strong>Pattern:</strong> "sorted array" + "find/insert/count" → binary search. More broadly, "minimize/maximize X such that a monotonic condition holds" → binary search on the answer.</div>
+
+<div class="interview">
+  <h3>🎯 Interview questions</h3>
+  <details><summary>What must hold for binary search to work?</summary><p>The data must be sorted, or the condition you're testing must be monotonic (true-then-false or false-then-true) across the range.</p></details>
+  <details><summary>How do you find the first occurrence of a value?</summary><p>Lower bound: when arr[mid] ≥ target, record it and keep searching left (hi = mid - 1) to find the earliest index.</p></details>
+  <details><summary>Why compute mid as lo + (hi - lo)/2?</summary><p>It avoids integer overflow from lo + hi in fixed-width integer languages; same result, safer.</p></details>
+  <details><summary>What is "binary search on the answer"?</summary><p>When the answer space is monotonic, binary search the candidate value (e.g. minimum capacity, smallest divisor) and test feasibility at each midpoint.</p></details>
+</div>
