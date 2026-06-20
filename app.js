@@ -271,6 +271,35 @@ themeToggle.addEventListener("click", () => {
 });
 syncThemeIcon();
 
+/* ---------- Mobile sidebar drawer ---------- */
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebar-toggle");
+const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+const sidebarToggleIcon = document.getElementById("sidebar-toggle-icon");
+const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+
+function setSidebar(open) {
+  sidebar.classList.toggle("-translate-x-full", !open);
+  sidebar.classList.toggle("translate-x-0", open);
+  sidebarBackdrop.classList.toggle("hidden", !open);
+  if (sidebarToggleIcon) sidebarToggleIcon.textContent = open ? "✕" : "☰";
+  sidebarToggle.setAttribute("aria-expanded", String(open));
+}
+const openSidebar  = () => setSidebar(true);
+const closeSidebar = () => setSidebar(false);
+
+sidebarToggle.addEventListener("click", () =>
+  setSidebar(sidebar.classList.contains("-translate-x-full")));
+sidebarBackdrop.addEventListener("click", closeSidebar);
+// Close the drawer after picking a module (but not when toggling a group header)
+navList.addEventListener("click", (e) => {
+  if (e.target.closest(".nav-item") && isMobile()) closeSidebar();
+});
+// Esc closes it too
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && isMobile()) closeSidebar();
+});
+
 /* ---------- Search ---------- */
 search.addEventListener("input", () => {
   const q = search.value.toLowerCase().trim();
