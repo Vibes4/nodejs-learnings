@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hexagon logo">
+  <rect width="64" height="64" rx="14" fill="#059669"/>
+  <!-- Outer hexagon (matches the ⬢ brand mark) -->
+  <path d="M32 12 L49 22 L49 42 L32 52 L15 42 L15 22 Z"
+        fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linejoin="round"/>
+  <!-- Inner hexagon -->
+  <path d="M32 25 L41 30.5 L41 39.5 L32 45 L23 39.5 L23 30.5 Z" fill="#ffffff"/>
+</svg>
