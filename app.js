@@ -187,6 +187,106 @@ const MODULES = {
       ["lru-cache",            "LRU Cache",               "HashMap + DLL · O(1)"]
     ]
   },
+  "Sliding Window": {
+    folder: "dsa-patterns/sliding-window", collapsed: true, divider: "DSA Patterns",
+    items: [
+      ["max-sum-subarray-k",         "Max Sum Subarray of Size K",      "fixed window · O(n)"],
+      ["longest-substring-no-repeat","Longest Substring w/o Repeat",    "dynamic window · O(n)"],
+      ["longest-k-distinct",         "Longest Substring K Distinct",    "window + map · O(n)"],
+      ["min-window-substring",       "Minimum Window Substring",        "shrink window · O(n)"]
+    ]
+  },
+  "Two Pointers": {
+    folder: "dsa-patterns/two-pointers", collapsed: true,
+    items: [
+      ["three-sum",            "3Sum",                       "sort + two pointers · O(n²)"],
+      ["container-most-water", "Container With Most Water",  "two ends · O(n)"],
+      ["valid-palindrome",     "Valid Palindrome",           "converge · O(n)"],
+      ["sort-colors",          "Sort Colors (Dutch flag)",   "3-way partition · O(n)"]
+    ]
+  },
+  "Fast & Slow Pointers": {
+    folder: "dsa-patterns/fast-slow", collapsed: true,
+    items: [
+      ["linked-list-cycle", "Linked List Cycle",   "Floyd · O(n)"],
+      ["cycle-start",       "Start of Cycle",       "Floyd + reset · O(n)"],
+      ["happy-number",      "Happy Number",         "cycle on digit-squares"]
+    ]
+  },
+  "Merge Intervals (pattern)": {
+    folder: "dsa-patterns/merge-intervals", collapsed: true,
+    items: [
+      ["merge-intervals",       "Merge Intervals",       "sort + merge · O(n log n)"],
+      ["insert-interval",       "Insert Interval",       "scan + merge · O(n)"],
+      ["interval-intersection", "Interval Intersection", "two pointers · O(n+m)"]
+    ]
+  },
+  "Cyclic Sort": {
+    folder: "dsa-patterns/cyclic-sort", collapsed: true,
+    items: [
+      ["missing-number",         "Missing Number",          "place i at index i · O(n)"],
+      ["find-duplicates",        "Find All Duplicates",     "cyclic sort · O(n)"],
+      ["first-missing-positive", "First Missing Positive",  "cyclic sort · O(n)"]
+    ]
+  },
+  "Tree BFS": {
+    folder: "dsa-patterns/tree-bfs", collapsed: true,
+    items: [
+      ["level-order",     "Level Order Traversal", "queue · O(n)"],
+      ["zigzag",          "Zigzag Level Order",     "queue + flip · O(n)"],
+      ["right-side-view", "Right Side View",        "last per level · O(n)"]
+    ]
+  },
+  "Backtracking": {
+    folder: "dsa-patterns/backtracking", collapsed: true,
+    items: [
+      ["subsets",         "Subsets",          "include/exclude · O(2ⁿ)"],
+      ["permutations",    "Permutations",     "used set · O(n!)"],
+      ["combination-sum", "Combination Sum",  "choose + recurse"],
+      ["word-search",     "Word Search",      "DFS grid + backtrack"]
+    ]
+  },
+  "Modified Binary Search": {
+    folder: "dsa-patterns/binary-search", collapsed: true,
+    items: [
+      ["rotated-array", "Search in Rotated Array", "O(log n)"],
+      ["find-peak",     "Find Peak Element",        "O(log n)"],
+      ["koko-bananas",  "Koko Eating Bananas",      "binary search on answer"]
+    ]
+  },
+  "Top K Elements": {
+    folder: "dsa-patterns/top-k", collapsed: true,
+    items: [
+      ["kth-largest",     "Kth Largest Element",       "min-heap size k"],
+      ["top-k-frequent",  "Top K Frequent Elements",   "bucket / heap"],
+      ["k-closest-points","K Closest Points to Origin","max-heap size k"]
+    ]
+  },
+  "Dynamic Programming": {
+    folder: "dsa-patterns/dynamic-programming", collapsed: true,
+    items: [
+      ["climbing-stairs",                "Climbing Stairs",            "fib DP · O(n)"],
+      ["house-robber",                   "House Robber",               "DP · O(n)"],
+      ["coin-change",                    "Coin Change",                "unbounded knapsack"],
+      ["longest-increasing-subsequence", "Longest Increasing Subseq",  "DP · O(n²)"]
+    ]
+  },
+  "Monotonic Stack": {
+    folder: "dsa-patterns/monotonic-stack", collapsed: true,
+    items: [
+      ["daily-temperatures", "Daily Temperatures",            "decreasing stack · O(n)"],
+      ["next-greater",       "Next Greater Element",          "monotonic stack · O(n)"],
+      ["largest-rectangle",  "Largest Rectangle in Histogram","stack · O(n)"]
+    ]
+  },
+  "Prefix Sum": {
+    folder: "dsa-patterns/prefix-sum", collapsed: true,
+    items: [
+      ["subarray-sum-k",      "Subarray Sum Equals K",  "prefix + map · O(n)"],
+      ["product-except-self", "Product Except Self",     "prefix/suffix · O(n)"],
+      ["range-sum",           "Range Sum Query",         "prefix array · O(1) query"]
+    ]
+  },
   "System Design": {
     folder: "system-design",
     items: [
