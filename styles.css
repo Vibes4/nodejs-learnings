@@ -106,6 +106,18 @@ html { scroll-behavior: smooth; }
   color: var(--nav-group);
   font-weight: 700;
 }
+/* Labelled separator between sidebar blocks (built by app.js) */
+.nav-section-divider {
+  margin: 16px 16px 2px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--nav-muted);
+  font-weight: 800;
+}
+
 /* Collapsible sidebar groups (built by app.js) */
 summary.nav-group-title {
   cursor: pointer;

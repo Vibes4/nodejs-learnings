@@ -88,7 +88,7 @@ const MODULES = {
       ["normalization",     "Normalization",          "1NF–3NF, when to denormalize"]
     ]
   },
-  "DSA": {
+  "DSA · Concepts": {
     folder: "dsa",
     items: [
       ["big-o",         "Big-O cheat sheet",     "time & space complexity"],
@@ -103,6 +103,88 @@ const MODULES = {
       ["heap",          "Heap / Priority Queue", "top-K, streaming"],
       ["binary-search", "Binary Search",         "sorted data, O(log n)"],
       ["lru-cache",     "LRU Cache",             "HashMap + DLL, O(1)"]
+    ]
+  },
+  "Arrays": {
+    folder: "dsa-problems/arrays", collapsed: true, divider: "DSA Problems",
+    items: [
+      ["two-sum",              "Two Sum",                 "HashMap · O(n)"],
+      ["best-time-stock",      "Best Time to Buy/Sell",   "min-so-far · O(n)"],
+      ["product-except-self",  "Product Except Self",     "prefix/suffix · O(n)"],
+      ["move-zeroes",          "Move Zeroes",             "two pointers · O(n)"],
+      ["merge-intervals",      "Merge Intervals",         "sort+merge · O(n log n)"]
+    ]
+  },
+  "Strings": {
+    folder: "dsa-problems/strings", collapsed: true,
+    items: [
+      ["valid-anagram",        "Valid Anagram",           "freq count · O(n)"],
+      ["group-anagrams",       "Group Anagrams",          "sorted-key buckets"],
+      ["longest-substring",    "Longest Substring",       "sliding window · O(n)"],
+      ["longest-palindrome",   "Longest Palindrome",      "expand center · O(n²)"]
+    ]
+  },
+  "HashMap": {
+    folder: "dsa-problems/hashmap", collapsed: true,
+    items: [
+      ["two-sum",              "Two Sum",                 "complement map · O(n)"],
+      ["contains-duplicate",   "Contains Duplicate",      "Set · O(n)"],
+      ["valid-anagram",        "Valid Anagram",           "freq map · O(n)"],
+      ["frequency-counter",    "Frequency Counter",       "Map tally · O(n)"]
+    ]
+  },
+  "Linked List": {
+    folder: "dsa-problems/linked-list", collapsed: true,
+    items: [
+      ["reverse-list",         "Reverse Linked List",     "iterative · O(n)"],
+      ["detect-cycle",         "Detect Cycle",            "Floyd fast/slow"],
+      ["middle-node",          "Middle Node",             "fast/slow pointer"],
+      ["merge-two-lists",      "Merge Two Sorted Lists",  "dummy head"]
+    ]
+  },
+  "Stack": {
+    folder: "dsa-problems/stack", collapsed: true,
+    items: [
+      ["valid-parentheses",    "Valid Parentheses",       "stack match · O(n)"],
+      ["min-stack",            "Min Stack",               "aux min · O(1) ops"],
+      ["next-greater",         "Next Greater Element",    "monotonic stack · O(n)"]
+    ]
+  },
+  "Trees": {
+    folder: "dsa-problems/trees", collapsed: true,
+    items: [
+      ["max-depth",            "Max Depth",               "DFS recursion"],
+      ["level-order",          "Level Order Traversal",   "BFS queue"],
+      ["validate-bst",         "Validate BST",            "min/max bounds"],
+      ["lca",                  "Lowest Common Ancestor",  "recurse & split"]
+    ]
+  },
+  "Graphs": {
+    folder: "dsa-problems/graphs", collapsed: true,
+    items: [
+      ["number-of-islands",    "Number of Islands",       "DFS flood-fill · O(V+E)"],
+      ["clone-graph",          "Clone Graph",             "DFS + visited map"]
+    ]
+  },
+  "Heap": {
+    folder: "dsa-problems/heap", collapsed: true,
+    items: [
+      ["k-largest",            "K Largest Elements",      "min-heap size k"],
+      ["top-k-frequent",       "Top K Frequent",          "bucket sort"]
+    ]
+  },
+  "Binary Search": {
+    folder: "dsa-problems/binary-search", collapsed: true,
+    items: [
+      ["binary-search",        "Binary Search",           "sorted · O(log n)"],
+      ["search-insert",        "Search Insert Position",  "lower bound"],
+      ["first-last-occurrence","First/Last Occurrence",   "bounded search"]
+    ]
+  },
+  "LRU Cache (problem)": {
+    folder: "dsa-problems/lru", collapsed: true,
+    items: [
+      ["lru-cache",            "LRU Cache",               "HashMap + DLL · O(1)"]
     ]
   },
   "System Design": {
@@ -136,10 +218,17 @@ const keyOf = (folder, slug) => `${folder}::${slug}`;
 
 function buildNav() {
   navList.innerHTML = "";
-  for (const [group, { folder, items }] of Object.entries(MODULES)) {
+  for (const [group, { folder, items, collapsed, divider }] of Object.entries(MODULES)) {
+    if (divider) {                             // labelled separator before a block of groups
+      const dv = document.createElement("div");
+      dv.className = "nav-section-divider";
+      dv.textContent = divider;
+      navList.appendChild(dv);
+    }
+
     const details = document.createElement("details");
     details.className = "nav-group";
-    details.open = true;                       // expanded by default; click to collapse
+    details.open = !collapsed;                 // expanded by default; collapsed groups start closed
 
     const summary = document.createElement("summary");
     summary.className = "nav-group-title";
